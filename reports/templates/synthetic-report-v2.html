@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<!--
+  Plantilla v2 — Testing sintético Koin
+  Copiar este archivo a reports/AAAA-MM-DD_producto.html y editar solo REPORT_DATA.
+-->
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reporte testing sintético — Plantilla v2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --gray-25: #fcfcfd; --gray-50: #f9fafb; --gray-100: #f2f4f7; --gray-200: #eaecf0;
+      --gray-400: #98a2b3; --gray-500: #667085; --gray-600: #475467; --gray-700: #344054; --gray-900: #101828;
+      --brand: #10b132; --brand-dark: #067647; --brand-light: #ecfdf3;
+      --error: #d92d20; --error-bg: #fef3f2; --warning: #dc6803; --warning-bg: #fffaeb;
+      --crit: #b42318; --purple: #7c3aed; --purple-light: #f5f3ff;
+      --blue-fric: #2563eb;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; font-family: Inter, system-ui, sans-serif; background: var(--gray-50); color: var(--gray-900); line-height: 1.55; font-size: 14px; }
+
+    .cover {
+      background: linear-gradient(155deg, #0c111d 0%, #182230 45%, #0d5030 100%);
+      color: #fff; padding: 40px 28px 48px; position: relative; overflow: hidden;
+    }
+    .cover::before {
+      content: ""; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 50% at 100% 0%, rgba(16, 177, 50, 0.2), transparent 55%),
+        radial-gradient(ellipse 45% 40% at 0% 100%, rgba(255, 255, 255, 0.05), transparent 45%);
+      pointer-events: none;
+    }
+    .cover-inner { position: relative; max-width: 960px; margin: 0 auto; }
+    .cover-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .cover-logo {
+      width: 40px; height: 40px; border-radius: 8px; background: var(--brand);
+      display: flex; align-items: center; justify-content: center;
+      font-family: "DM Sans", sans-serif; font-weight: 700; font-size: 18px; color: #fff;
+    }
+    .cover-brand-txt { font-size: 13px; font-weight: 600; letter-spacing: 0.02em; color: rgba(255,255,255,0.9); }
+    .cover-title { font-family: "DM Sans", sans-serif; font-size: clamp(26px, 4vw, 36px); font-weight: 700; line-height: 1.15; margin: 0 0 14px; letter-spacing: -0.02em; }
+    .cover-keyq { font-size: 17px; font-weight: 500; color: #7dd3fc; margin: 0 0 24px; max-width: 42em; line-height: 1.45; }
+    .cover-pills { display: flex; flex-wrap: wrap; gap: 10px; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 14px; border-radius: 999px; background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12); font-size: 12px; color: rgba(255,255,255,0.88);
+    }
+    .pill strong { color: #fff; font-weight: 600; }
+
+    .doc-bar {
+      background: #fff; border-bottom: 1px solid var(--gray-200); padding: 10px 24px;
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px;
+      font-size: 11px; color: var(--gray-500);
+    }
+    .doc-bar strong { color: var(--gray-700); font-weight: 600; }
+    .doc-bar code { font-size: 10px; background: var(--gray-100); padding: 2px 8px; border-radius: 4px; color: var(--gray-700); }
+
+    .wrap { max-width: 960px; margin: 0 auto; padding: 28px 24px 56px; }
+
+    .kpi-strip {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+      background: #fff; border: 1px solid var(--gray-200); border-radius: 14px; overflow: hidden;
+      margin-bottom: 24px; box-shadow: 0 4px 24px rgba(16, 24, 40, 0.06);
+    }
+    @media (max-width: 900px) { .kpi-strip { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 480px) { .kpi-strip { grid-template-columns: 1fr; } }
+    .kpi {
+      padding: 20px 18px 18px; border-right: 1px solid var(--gray-200); position: relative;
+    }
+    .kpi:last-child { border-right: none; }
+    .kpi-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; }
+    .kpi--green .kpi-bar { background: linear-gradient(90deg, var(--brand), #34d399); }
+    .kpi--red .kpi-bar { background: linear-gradient(90deg, #f04438, #fda29b); }
+    .kpi--amber .kpi-bar { background: linear-gradient(90deg, var(--warning), #fec84b); }
+    .kpi--purple .kpi-bar { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
+    .kpi .num { font-family: "DM Sans", sans-serif; font-size: 34px; font-weight: 700; letter-spacing: -0.03em; color: var(--gray-900); line-height: 1; }
+    .kpi .num small { font-size: 18px; font-weight: 600; color: var(--gray-400); }
+    .kpi .lbl { margin-top: 8px; font-size: 11px; font-weight: 500; color: var(--gray-500); line-height: 1.35; max-width: 12rem; }
+    .kpi .sub { margin-top: 4px; font-size: 10px; color: var(--gray-400); }
+
+    .keyq {
+      margin: 0 0 24px; padding: 16px 18px; background: var(--brand-light);
+      border-left: 4px solid var(--brand); border-radius: 0 10px 10px 0; font-size: 13px; color: var(--gray-700);
+    }
+    .keyq strong { color: var(--brand-dark); }
+
+    .section {
+      background: #fff; border: 1px solid var(--gray-200); border-radius: 12px; padding: 0; margin-bottom: 22px;
+      box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04);
+    }
+    .section-h { display: flex; align-items: flex-start; gap: 14px; padding: 20px 24px 0; border-left: 4px solid var(--brand); margin-left: 0; }
+    .section-num { font-family: "DM Sans", sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--brand); padding-top: 4px; }
+    .section h2 { margin: 0; font-family: "DM Sans", sans-serif; font-size: 17px; font-weight: 700; color: var(--gray-900); }
+    .section-body { padding: 14px 24px 22px; }
+    .section-note { font-size: 12px; color: var(--gray-500); margin: 0 0 14px; }
+
+    .exec-lead { font-size: 14px; color: var(--gray-600); margin: 0 0 14px; line-height: 1.6; }
+    .exec-bullets { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
+    .exec-bullets li { margin: 0; padding: 12px 14px; background: var(--gray-25); border-radius: 10px; border: 1px solid var(--gray-200); }
+    .exec-bullets strong { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gray-500); margin-bottom: 6px; }
+    .exec-bullets ul { margin: 0; padding-left: 18px; color: var(--gray-600); font-size: 13px; }
+
+    .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width: 860px) { .charts-grid { grid-template-columns: 1fr; } }
+    .figure { background: var(--gray-25); border: 1px solid var(--gray-200); border-radius: 12px; padding: 16px 16px 10px; }
+    .figure h3 { margin: 0 0 4px; font-size: 13px; font-weight: 600; color: var(--gray-900); }
+    .figure .sub { font-size: 11px; color: var(--gray-500); margin-bottom: 10px; }
+    .chart-wrap { position: relative; height: 260px; }
+    .chart-wrap.tall { height: 300px; }
+    .fig-cap { text-align: center; font-size: 10px; color: var(--gray-500); margin-top: 8px; font-style: italic; }
+
+    .finding-card-rich {
+      border: 1px solid var(--gray-200); border-radius: 12px; padding: 0; margin-bottom: 20px; overflow: hidden;
+      background: #fff; box-shadow: 0 2px 8px rgba(16,24,40,0.04);
+    }
+    .finding-card-head {
+      display: flex; align-items: flex-start; gap: 14px; padding: 18px 20px;
+      border-bottom: 1px solid var(--gray-100); flex-wrap: wrap;
+    }
+    .finding-badge-num {
+      width: 32px; height: 32px; border-radius: 50%; background: var(--gray-900); color: #fff;
+      display: flex; align-items: center; justify-content: center; font-family: "DM Sans", sans-serif; font-weight: 700; font-size: 14px; flex-shrink: 0;
+    }
+    .finding-titles-wrap { flex: 1; min-width: 200px; }
+    .finding-id {
+      display: block; font-family: ui-monospace, Consolas, monospace; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.04em; color: var(--gray-500); margin-bottom: 4px;
+    }
+    .finding-card-head h3 { margin: 0; font-size: 15px; font-weight: 700; }
+    .sev { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; padding: 5px 10px; border-radius: 999px; }
+    .sev.CRITICO { background: var(--error-bg); color: var(--crit); }
+    .sev.ALTO { background: var(--warning-bg); color: var(--warning); }
+    .sev.MEDIO { background: var(--gray-100); color: var(--gray-600); }
+    .sev.BAJO { background: var(--brand-light); color: var(--brand-dark); }
+
+    .meta-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; padding: 14px 20px;
+      background: var(--gray-50); font-size: 12px; border-bottom: 1px solid var(--gray-100);
+    }
+    @media (max-width: 560px) { .meta-grid { grid-template-columns: 1fr; } }
+    .meta-grid dt { font-weight: 600; color: var(--gray-500); margin: 0; font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .meta-grid dd { margin: 4px 0 0; color: var(--gray-700); }
+
+    .finding-body { padding: 16px 20px 20px; font-size: 13px; color: var(--gray-600); }
+    .finding-body h4 { margin: 16px 0 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gray-500); }
+    .finding-body h4:first-child { margin-top: 0; }
+    .quote-box {
+      margin: 10px 0; padding: 12px 14px; background: var(--brand-light); border-radius: 8px;
+      font-style: italic; color: var(--gray-700); border-left: 3px solid var(--brand);
+    }
+    .change-box { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--gray-200); }
+    .change-box strong { color: var(--brand-dark); }
+    .criteria-list { margin: 8px 0 0; padding-left: 18px; }
+    .draft-box { margin-top: 12px; padding: 12px 14px; background: var(--purple-light); border-radius: 8px; font-size: 12px; color: var(--gray-700); }
+
+    .role-card { border: 1px solid var(--gray-200); border-radius: 12px; overflow: hidden; margin-bottom: 14px; background: #fff; }
+    .role-card h3 { margin: 0; padding: 12px 16px; font-family: "DM Sans", sans-serif; font-size: 14px; font-weight: 700; background: linear-gradient(180deg, var(--gray-50) 0%, #fff 100%); border-bottom: 1px solid var(--gray-200); }
+    .block-fric { padding: 12px 16px; background: var(--error-bg); border-left: 4px solid var(--error); }
+    .block-fric h4 { margin: 0 0 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--error); }
+    .block-ok { padding: 12px 16px; background: var(--brand-light); border-left: 4px solid var(--brand); }
+    .block-ok h4 { margin: 0 0 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--brand-dark); }
+    .role-foot { padding: 10px 16px; background: var(--gray-50); border-top: 1px solid var(--gray-200); font-size: 12px; color: var(--gray-600); }
+
+    .table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--gray-200); }
+    table.metrics { width: 100%; border-collapse: collapse; font-size: 12px; }
+    table.metrics thead { background: var(--gray-900); color: #fff; }
+    table.metrics th { text-align: left; padding: 10px 12px; font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+    table.metrics td { padding: 9px 12px; border-bottom: 1px solid var(--gray-100); }
+    table.metrics tbody tr:nth-child(even) { background: var(--gray-50); }
+
+    .next-row { border: 1px solid var(--gray-200); border-radius: 10px; margin-bottom: 10px; background: #fff; overflow: hidden; }
+    .next-row summary {
+      display: flex; align-items: center; gap: 12px; padding: 12px 14px; cursor: pointer;
+      list-style: none; font-size: 13px; color: var(--gray-900);
+    }
+    .next-row summary::-webkit-details-marker { display: none; }
+    .next-row summary::after { content: "Ver más"; margin-left: auto; font-size: 11px; font-weight: 600; color: var(--brand-dark); }
+    .next-row[open] summary::after { content: "Ver menos"; }
+    .next-num { width: 26px; height: 26px; border-radius: 50%; background: var(--gray-900); color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .next-title { flex: 1; font-weight: 500; }
+    .eff { font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+    .eff.bajo { background: var(--brand-light); color: var(--brand-dark); }
+    .eff.medio { background: var(--warning-bg); color: #b54708; }
+    .eff.alto { background: var(--error-bg); color: var(--crit); }
+    .next-detail { padding: 0 14px 16px; border-top: 1px solid var(--gray-100); background: var(--gray-25); }
+
+    footer { text-align: center; font-size: 11px; color: var(--gray-500); margin-top: 32px; padding: 18px; border-top: 1px solid var(--gray-200); }
+    @media print { body { background: #fff; } .cover { break-inside: avoid; } .kpi-strip, .section { break-inside: avoid; } .chart-wrap { height: 220px; } }
+  </style>
+</head>
+<body>
+  <section class="cover" aria-label="Portada">
+    <div class="cover-inner">
+      <div class="cover-brand">
+        <div class="cover-logo">K</div>
+        <span class="cover-brand-txt" id="cover-kicker">Koin — Testing sintético</span>
+      </div>
+      <h1 class="cover-title" id="cover-product-title">Título del producto</h1>
+      <p class="cover-keyq" id="cover-key-question"></p>
+      <div class="cover-pills" id="cover-pills"></div>
+    </div>
+  </section>
+
+  <div class="doc-bar" id="doc-bar"></div>
+
+  <div class="wrap">
+    <div class="kpi-strip" id="kpi-strip"></div>
+
+    <div class="keyq" id="keyq-box"></div>
+
+    <article class="section">
+      <div class="section-h"><span class="section-num">01</span><h2>Resumen ejecutivo</h2></div>
+      <div class="section-body" id="sec-summary"></div>
+    </article>
+
+    <article class="section">
+      <div class="section-h"><span class="section-num">02</span><h2>Análisis visual — cohorte sintética</h2></div>
+      <div class="section-body">
+        <p style="margin: 0 0 16px; font-size: 13px; color: var(--gray-600);" id="charts-intro"></p>
+        <div class="charts-grid">
+          <figure class="figure">
+            <h3>Completitud del flujo por rol</h3>
+            <p class="sub">Barras apiladas — completaron vs. abandonaron</p>
+            <div class="chart-wrap"><canvas id="g1"></canvas></div>
+            <figcaption class="fig-cap">Figura 1. Completitud por rol (n = 5 por cohorte).</figcaption>
+          </figure>
+          <figure class="figure">
+            <h3>Fricciones detectadas por rol</h3>
+            <p class="sub">Total de eventos de fricción simulados</p>
+            <div class="chart-wrap"><canvas id="g2"></canvas></div>
+            <figcaption class="fig-cap">Figura 2. Fricciones por rol.</figcaption>
+          </figure>
+          <figure class="figure">
+            <h3>Severidad de hallazgos</h3>
+            <p class="sub" id="g3-sub"></p>
+            <div class="chart-wrap tall"><canvas id="g3"></canvas></div>
+            <figcaption class="fig-cap">Figura 3. Distribución por nivel de impacto.</figcaption>
+          </figure>
+          <figure class="figure">
+            <h3>Matriz esfuerzo × impacto</h3>
+            <p class="sub">Verde = quick win sugerido · Cuadrante superior-izquierdo = bajo esfuerzo, alto impacto</p>
+            <div class="chart-wrap tall"><canvas id="g4"></canvas></div>
+            <figcaption class="fig-cap">Figura 4. Priorización de hallazgos.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </article>
+
+    <article class="section">
+      <div class="section-h"><span class="section-num">03</span><h2>Hallazgos priorizados</h2></div>
+      <div class="section-body">
+        <p class="section-note" id="top-findings-note"></p>
+        <div id="top-findings-root"></div>
+      </div>
+    </article>
+
+    <article class="section">
+      <div class="section-h"><span class="section-num">04</span><h2>Análisis por rol</h2></div>
+      <div class="section-body" id="role-cards-root"></div>
+    </article>
+
+    <article class="section">
+      <div class="section-h"><span class="section-num">05</span><h2>Matriz de cohorte sintética</h2></div>
+      <div class="section-body">
+        <div class="table-wrap">
+          <table class="metrics">
+            <thead>
+              <tr>
+                <th>ID</th><th>Rol</th><th>Var.</th><th>Resultado</th><th>Paso máx.</th><th>Fricciones</th>
+              </tr>
+            </thead>
+            <tbody id="cohorte-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </article>
+
+    <article class="section">
+      <div class="section-h"><span class="section-num">06</span><h2>Próximos pasos sugeridos</h2></div>
+      <div class="section-body">
+        <p class="section-note">Todos los hallazgos ordenados por prioridad de roadmap. Expandí <strong>Ver más</strong> para ver la ficha completa (misma estructura que §03).</p>
+        <div id="next-steps-root"></div>
+      </div>
+    </article>
+
+    <footer id="footer"></footer>
+  </div>
+
+  <!-- Datos del informe: reemplazar el interior de #report-data-json o usar reports/data/*.json + build -->
+  <script type="application/json" id="report-data-json">{}</script>
+  <script>
+    const REPORT_DATA = JSON.parse(document.getElementById("report-data-json").textContent);
+
+    const SEV_RANK = { CRITICO: 4, ALTO: 3, MEDIO: 2, BAJO: 1 };
+
+    function escapeHtml(s) {
+      if (s == null) return "";
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function formatLead(s) {
+      if (!s) return "";
+      const parts = String(s).split(/\*\*(.+?)\*\*/g);
+      return parts
+        .map((p, i) => (i % 2 === 1 ? "<strong>" + escapeHtml(p) + "</strong>" : escapeHtml(p)))
+        .join("");
+    }
+
+    function effortClass(effort) {
+      const e = Number(effort);
+      if (e <= 1.5) return { cls: "bajo", label: "Esfuerzo bajo" };
+      if (e <= 2.5) return { cls: "medio", label: "Esfuerzo medio" };
+      return { cls: "alto", label: "Esfuerzo alto" };
+    }
+
+    function compareTop(a, b) {
+      const sa = a.impact / Math.max(0.5, a.effort);
+      const sb = b.impact / Math.max(0.5, b.effort);
+      if (sb !== sa) return sb - sa;
+      return (SEV_RANK[b.severity] || 0) - (SEV_RANK[a.severity] || 0);
+    }
+
+    function pickTopFindings(findings, limit) {
+      return [...findings].sort(compareTop).slice(0, limit);
+    }
+
+    function sortRoadmap(findings) {
+      return [...findings].sort((a, b) => {
+        if (b.impact !== a.impact) return b.impact - a.impact;
+        if (a.effort !== b.effort) return a.effort - b.effort;
+        return (SEV_RANK[b.severity] || 0) - (SEV_RANK[a.severity] || 0);
+      });
+    }
+
+    function severityCounts(findings) {
+      const o = { CRITICO: 0, ALTO: 0, MEDIO: 0, BAJO: 0 };
+      findings.forEach((f) => {
+        if (o[f.severity] !== undefined) o[f.severity]++;
+      });
+      return o;
+    }
+
+    function renderFindingInner(f) {
+      const freq = `${f.frequency.affected}/${f.frequency.denominator} ${f.frequency.label || ""}`.trim();
+      let html = '<div class="meta-grid">';
+      html += `<div><dt>Roles afectados</dt><dd>${escapeHtml(f.rolesAffected.join(", "))}</dd></div>`;
+      html += `<div><dt>Frecuencia</dt><dd>${escapeHtml(freq)}</dd></div>`;
+      html += "</div>";
+      html += '<div class="finding-body">';
+      html += "<h4>Descripción</h4>";
+      html += `<p>${escapeHtml(f.description)}</p>`;
+      if (f.quote) {
+        html += `<div class="quote-box">"${escapeHtml(f.quote)}"</div>`;
+      }
+      html += '<div class="change-box"><strong>Cambio sugerido:</strong> ';
+      html += escapeHtml(f.suggestedChange);
+      html += "</div>";
+      html += "<h4>Impacto en negocio</h4>";
+      html += `<p>${escapeHtml(f.businessImpact)}</p>`;
+      html += "<h4>Criterios de aceptación</h4>";
+      html += '<ul class="criteria-list">';
+      (f.acceptanceCriteria || []).forEach((c) => {
+        html += `<li>${escapeHtml(c)}</li>`;
+      });
+      html += "</ul>";
+      if (f.contentDraft) {
+        html += "<h4>Contenido sugerido (borrador)</h4>";
+        html += `<div class="draft-box">${escapeHtml(f.contentDraft)}</div>`;
+      }
+      html += "</div>";
+      return html;
+    }
+
+    function renderFindingCard(f, index) {
+      const inner = renderFindingInner(f);
+      const sev = f.severity;
+      return (
+        `<div class="finding-card-rich" id="finding-${escapeHtml(f.id)}">` +
+        `<div class="finding-card-head">` +
+        `<span class="finding-badge-num">${index}</span>` +
+        `<div class="finding-titles-wrap">` +
+        `<span class="finding-id">${escapeHtml(f.id)}</span>` +
+        `<h3>${escapeHtml(f.title)}</h3>` +
+        `</div>` +
+        `<span class="sev ${escapeHtml(sev)}">${escapeHtml(sev)}</span>` +
+        `</div>${inner}</div>`
+      );
+    }
+
+    function renderRoleCards(cards) {
+      return cards
+        .map(
+          (r) =>
+            `<div class="role-card"><h3>${escapeHtml(r.title)}</h3>` +
+            `<div class="block-fric"><h4>Fricciones</h4><ul>${r.fricciones.map((x) => `<li>${escapeHtml(x)}</li>`).join("")}</ul></div>` +
+            `<div class="block-ok"><h4>Qué funcionó</h4><ul>${r.ok.map((x) => `<li>${escapeHtml(x)}</li>`).join("")}</ul></div>` +
+            `<div class="role-foot"><strong>Prioridad:</strong> ${escapeHtml(r.priority)}</div></div>`,
+        )
+        .join("");
+    }
+
+    function init() {
+      const d = REPORT_DATA;
+      const m = d.meta;
+      document.title = m.pageTitle;
+
+      document.getElementById("cover-kicker").textContent = m.coverKicker;
+      document.getElementById("cover-product-title").textContent = m.productTitle;
+      document.getElementById("cover-key-question").textContent = m.keyQuestion;
+
+      const pills = document.getElementById("cover-pills");
+      pills.innerHTML = [
+        ["Fecha", m.dateLabel],
+        ["Modo", m.modeLabel],
+        ["Producto", m.productLabel],
+        ["URL", m.url],
+      ]
+        .map(([k, v]) => `<span class="pill"><strong>${escapeHtml(k)}:</strong> ${escapeHtml(v)}</span>`)
+        .join("");
+
+      document.getElementById("doc-bar").innerHTML =
+        `<span><strong>Producto</strong> · ${escapeHtml(m.productLabel)}</span>` +
+        `<span><strong>URL</strong> · <code>${escapeHtml(m.url)}</code></span>` +
+        `<span><strong>Clasificación</strong> · ${escapeHtml(m.docClassification)}</span>` +
+        `<span><strong>Ref.</strong> · ${escapeHtml(m.ref)}</span>`;
+
+      const comp = d.charts.completaron.reduce((a, b) => a + b, 0);
+      const ab = d.charts.abandonaron.reduce((a, b) => a + b, 0);
+      const fr = d.charts.fricciones.reduce((a, b) => a + b, 0);
+      const n = m.cohortSize;
+      const nf = d.findings.length;
+      const topK = Math.min(m.topLimit || 7, nf);
+      const topList = pickTopFindings(d.findings, topK);
+
+      const kpis = [
+        { cls: "kpi--green", num: `${comp}<small>/${n}</small>`, lbl: "Completaron el flujo", sub: "" },
+        { cls: "kpi--red", num: `${ab}<small>/${n}</small>`, lbl: "Abandonaron", sub: "" },
+        { cls: "kpi--amber", num: String(fr), lbl: "Fricciones detectadas", sub: "Σ eventos simulados" },
+        { cls: "kpi--purple", num: String(nf), lbl: "Hallazgos detectados", sub: `Top ${topK} en §03 (matriz)` },
+      ];
+      document.getElementById("kpi-strip").innerHTML = kpis
+        .map(
+          (k) =>
+            `<div class="kpi ${k.cls}"><div class="num">${k.num}</div>` +
+            `<div class="lbl">${escapeHtml(k.lbl)}</div>` +
+            (k.sub ? `<div class="sub">${escapeHtml(k.sub)}</div>` : "") +
+            `<div class="kpi-bar"></div></div>`,
+        )
+        .join("");
+
+      document.getElementById("keyq-box").innerHTML =
+        `<strong>Pregunta clave del estudio.</strong> ${escapeHtml(m.keyQuestion)}`;
+
+      const sum = d.summary;
+      let sb = "";
+      if (sum.bullets && sum.bullets.length) {
+        sb =
+          '<ul class="exec-bullets">' +
+          sum.bullets
+            .map(
+              (b) =>
+                `<li><strong>${escapeHtml(b.title)}</strong><ul>${b.items.map((i) => `<li>${escapeHtml(i)}</li>`).join("")}</ul></li>`,
+            )
+            .join("") +
+          "</ul>";
+      }
+      document.getElementById("sec-summary").innerHTML = `<p class="exec-lead">${formatLead(sum.lead)}</p>` + sb;
+
+      document.getElementById("charts-intro").textContent = m.chartsIntro || "";
+
+      document.getElementById("top-findings-note").textContent =
+        `Top ${topList.length} por matriz esfuerzo × impacto (desempate por severidad). Total de hallazgos documentados: ${nf}.`;
+
+      document.getElementById("top-findings-root").innerHTML = topList.map((f, i) => renderFindingCard(f, i + 1)).join("");
+
+      document.getElementById("role-cards-root").innerHTML = renderRoleCards(d.roleCards || []);
+
+      document.getElementById("cohorte-body").innerHTML = (d.cohort || [])
+        .map(
+          ([id, rol, v, res, paso, fricc]) =>
+            `<tr><td><strong>${escapeHtml(id)}</strong></td><td>${escapeHtml(rol)}</td><td>${escapeHtml(v)}</td>` +
+            `<td>${escapeHtml(res)}</td><td><code>${escapeHtml(paso)}</code></td><td>${escapeHtml(String(fricc))}</td></tr>`,
+        )
+        .join("");
+
+      const sc = severityCounts(d.findings);
+      document.getElementById("g3-sub").textContent = `Distribución de los ${nf} hallazgos documentados`;
+
+      const ordered = sortRoadmap(d.findings);
+      document.getElementById("next-steps-root").innerHTML = ordered
+        .map((f, i) => {
+          const ef = effortClass(f.effort);
+          return (
+            `<details class="next-row" id="next-${escapeHtml(f.id)}">` +
+            `<summary><span class="next-num">${i + 1}</span><span class="next-title">${escapeHtml(f.title)}</span>` +
+            `<span class="eff ${ef.cls}">${ef.label}</span></summary>` +
+            `<div class="next-detail">${renderFindingInner(f)}</div></details>`
+          );
+        })
+        .join("");
+
+      document.getElementById("footer").innerHTML =
+        `<div style="font-weight:600;color:var(--gray-700);margin-bottom:4px;">Koin · Onboarding &amp; activación</div>` +
+        `Ref. ${escapeHtml(m.ref)} · ${escapeHtml(m.url)} · <code>SYNTHETIC_USERS_SKILL.md</code> v2 · Plantilla`;
+
+      const roles = d.charts.roles;
+      Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+      Chart.defaults.color = "#475467";
+
+      new Chart(document.getElementById("g1"), {
+        type: "bar",
+        data: {
+          labels: roles,
+          datasets: [
+            { label: "Completaron", data: d.charts.completaron, backgroundColor: "#10B132", stack: "s" },
+            { label: "Abandonaron", data: d.charts.abandonaron, backgroundColor: "#D92D20", stack: "s" },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: "bottom", labels: { boxWidth: 12, padding: 14 } } },
+          scales: {
+            x: { stacked: true, grid: { display: false } },
+            y: { stacked: true, beginAtZero: true, max: 5, ticks: { stepSize: 1 } },
+          },
+        },
+      });
+
+      const cols = d.charts.frictionColors || ["#D92D20", "#DC6803", "#10B132", "#7C3AED", "#2563EB"];
+      new Chart(document.getElementById("g2"), {
+        type: "bar",
+        data: {
+          labels: roles,
+          datasets: [
+            {
+              label: "Fricciones",
+              data: d.charts.fricciones,
+              backgroundColor: roles.map((_, i) => cols[i % cols.length]),
+              borderColor: roles.map((_, i) => cols[i % cols.length]),
+              borderWidth: 2,
+              borderRadius: 4,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } },
+        },
+      });
+
+      new Chart(document.getElementById("g3"), {
+        type: "doughnut",
+        data: {
+          labels: ["CRÍTICO", "ALTO", "MEDIO", "BAJO"],
+          datasets: [
+            {
+              data: [sc.CRITICO, sc.ALTO, sc.MEDIO, sc.BAJO],
+              backgroundColor: ["#D92D20", "#DC6803", "#98A2B3", "#10B132"],
+              borderWidth: 2,
+              borderColor: "#fff",
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: "58%",
+          plugins: { legend: { position: "right" } },
+        },
+      });
+
+      const scatterData = d.findings.map((f) => ({
+        x: f.effort,
+        y: f.impact,
+        qw: !!f.quickWin,
+        l: f.title,
+      }));
+
+      new Chart(document.getElementById("g4"), {
+        type: "scatter",
+        data: {
+          datasets: [
+            {
+              label: "Hallazgos",
+              data: scatterData.map((p) => ({ x: p.x, y: p.y })),
+              backgroundColor: scatterData.map((p) => (p.qw ? "#10B132" : "#98A2B3")),
+              pointRadius: scatterData.map((p) => (p.qw ? 9 : 6)),
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label(ctx) {
+                  return scatterData[ctx.dataIndex]?.l || "";
+                },
+              },
+            },
+          },
+          scales: {
+            x: { title: { display: true, text: "Esfuerzo (menor → izquierda)" }, min: 0.5, max: 3.5, grid: { color: "#EAECF0" } },
+            y: { title: { display: true, text: "Impacto (mayor → arriba)" }, min: 0.5, max: 5.5, grid: { color: "#EAECF0" } },
+          },
+        },
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>

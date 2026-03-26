@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Test sintético — Asistente VTEX · Autonomía de contactos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --gray-25: #fcfcfd; --gray-50: #f9fafb; --gray-100: #f2f4f7; --gray-200: #eaecf0;
+      --gray-400: #98a2b3; --gray-500: #667085; --gray-600: #475467; --gray-700: #344054; --gray-900: #101828;
+      --brand: #10b132; --brand-dark: #067647; --brand-light: #ecfdf3;
+      --error: #d92d20; --error-bg: #fef3f2; --warning: #dc6803; --warning-bg: #fffaeb;
+      --crit: #b42318; --purple: #7c3aed; --purple-light: #f5f3ff;
+      --blue-fric: #2563eb;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; font-family: Inter, system-ui, sans-serif; background: var(--gray-50); color: var(--gray-900); line-height: 1.55; font-size: 14px; }
+
+    .cover {
+      background: linear-gradient(155deg, #0c111d 0%, #182230 45%, #0d5030 100%);
+      color: #fff; padding: 40px 28px 48px; position: relative; overflow: hidden;
+    }
+    .cover::before {
+      content: ""; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 50% at 100% 0%, rgba(16, 177, 50, 0.2), transparent 55%),
+        radial-gradient(ellipse 45% 40% at 0% 100%, rgba(255, 255, 255, 0.05), transparent 45%);
+      pointer-events: none;
+    }
+    .cover-inner { position: relative; max-width: 960px; margin: 0 auto; }
+    .cover-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .cover-logo {
+      width: 40px; height: 40px; border-radius: 8px; background: var(--brand);
+      display: flex; align-items: center; justify-content: center;
+      font-family: "DM Sans", sans-serif; font-weight: 700; font-size: 18px; color: #fff;
+    }
+    .cover-brand-txt { font-size: 13px; font-weight: 600; letter-spacing: 0.02em; color: rgba(255,255,255,0.9); }
+    .cover-title { font-family: "DM Sans", sans-serif; font-size: clamp(26px, 4vw, 36px); font-weight: 700; line-height: 1.15; margin: 0 0 14px; letter-spacing: -0.02em; }
+    .cover-keyq { font-size: 17px; font-weight: 500; color: #7dd3fc; margin: 0 0 24px; max-width: 42em; line-height: 1.45; }
+    .cover-pills { display: flex; flex-wrap: wrap; gap: 10px; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 14px; border-radius: 999px; background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12); font-size: 12px; color: rgba(255,255,255,0.88);
+    }
+    .pill strong { color: #fff; font-weight: 600; }
+
+    .doc-bar {
+      background: #fff; border-bottom: 1px solid var(--gray-200); padding: 10px 24px;
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px;
+      font-size: 11px; color: var(--gray-500);
+    }
+    .doc-bar strong { color: var(--gray-700); font-weight: 600; }
+    .doc-bar code { font-size: 10px; background: var(--gray-100); padding: 2px 8px; border-radius: 4px; color: var(--gray-700); }
+
+    .wrap { max-width: 960px; margin: 0 auto; padding: 28px 24px 56px; }
+
+    .kpi-strip {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+      background: #fff; border: 1px solid var(--gray-200); border-radius: 14px; overflow: hidden;
+      margin-bottom: 24px; box-shadow: 0 4px 24px rgba(16, 24, 40, 0.06);
+    }
+    @media (max-width: 900px) { .kpi-strip { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 480px) { .kpi-strip { grid-template-columns: 1fr; } }
+    .kpi {
+      padding: 20px 18px 18px; border-right: 1px solid var(--gray-200); position: relative;
+    }
+    .kpi:last-child { border-right: none; }
+    .kpi-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; }
+    .kpi--green .kpi-bar { background: linear-gradient(90deg, var(--brand), #34d399); }
+    .kpi--red .kpi-bar { background: linear-gradient(90deg, #f04438, #fda29b); }
+    .kpi--amber .kpi-bar { background: linear-gradient(90deg, var(--warning), #fec84b); }
+    .kpi--purple .kpi-bar { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
+    .kpi .num { font-family: "DM Sans", sans-serif; font-size: 34px; font-weight: 700; letter-spacing: -0.03em; color: var(--gray-900); line-height: 1; }
+    .kpi .num small { font-size: 18px; font-weight: 600; color: var(--gray-400); }
+    .kpi .lbl { margin-top: 8px; font-size: 11px; font-weight: 500; color: var(--gray-500); line-height: 1.35; max-width: 12rem; }
+    .kpi .sub { margin-top: 4px; font-size: 10px; color: var(--gray-400); }
+
+    .keyq {
+      margin: 0 0 24px; padding: 16px 18px; background: var(--brand-light);
+      border-left: 4px solid var(--brand); border-radius: 0 10px 10px 0; font-size: 13px; color: var(--gray-700);
+    }
+    .keyq strong { color: var(--brand-dark); }
+
+    .section {
+      background: #fff; border: 1px solid var(--gray-200); border-radius: 12px; padding: 0; margin-bottom: 22px;
+      box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04);
+    }
+    .section-h { display: flex; align-items: flex-start; gap: 14px; padding: 20px 24px 0; border-left: 4px solid var(--brand); margin-left: 0; }
+    .section-num { font-family: "DM Sans", sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--brand); padding-top: 4px; }
+    .section h2 { margin: 0; font-family: "DM Sans", sans-serif; font-size: 17px; font-weight: 700; color: var(--gray-900); }
+    .section-body { padding: 14px 24px 22px; }
+    .section-note { font-size: 12px; color: var(--gray-500); margin: 0 0 14px; }
+
+    .exec-lead { font-size: 14px; color: var(--gray-600); margin: 0 0 14px; line-height: 1.6; }
+    .exec-bullets { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
+    .exec-bullets li { margin: 0; padding: 12px 14px; background: var(--gray-25); border-radius: 10px; border: 1px solid var(--gray-200); }
+    .exec-bullets strong { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gray-500); margin-bottom: 6px; }
+    .exec-bullets ul { margin: 0; padding-left: 18px; color: var(--gray-600); font-size: 13px; }
+
+    .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width: 860px) { .charts-grid { grid-template-columns: 1fr; } }
+    .figure { background: var(--gray-25); border: 1px solid var(--gray-200); border-radius: 12px; padding: 16px 16px 10px; }
+    .figure h3 { margin: 0 0 4px; font-size: 13px; font-weight: 600; color: var(--gray-900); }
+    .figure .sub { font-size: 11px; color: var(--gray-500); margin-bottom: 10px; }
+    .chart-wrap { position: relative; height: 260px; }
+    .chart-wrap.tall { height: 300px; }
+    .fig-cap { text-align: center; font-size: 10px; color: var(--gray-500); margin-top: 8px; font-style: italic; }
+
+    .finding-card-rich {
+      border: 1px solid var(--gray-200); border-radius: 12px; padding: 0; margin-bottom: 20px; overflow: hidden;
+      background: #fff; box-shadow: 0 2px 8px rgba(16,24,40,0.04);
+    }
+    .finding-card-head {
+      display: flex; align-items: flex-start; gap: 14px; padding: 18px 20px;
+      border-bottom: 1px solid var(--gray-100); flex-wrap: wrap;
+    }
+    .finding-badge-num {
+      width: 32px; height: 32px; border-radius: 50%; background: var(--gray-900); color: #fff;
+      display: flex; align-items: center; justify-content: center; font-family: "DM Sans", sans-serif; font-weight: 700; font-size: 14px; flex-shrink: 0;
+    }
+    .finding-titles-wrap { flex: 1; min-width: 200px; }
+    .finding-id {
+      display: block; font-family: ui-monospace, Consolas, monospace; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.04em; color: var(--gray-500); margin-bottom: 4px;
+    }
+    .finding-card-head h3 { margin: 0; font-size: 15px; font-weight: 700; }
+    .sev { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; padding: 5px 10px; border-radius: 999px; }
+    .sev.CRITICO { background: var(--error-bg); color: var(--crit); }
+    .sev.ALTO { background: var(--warning-bg); color: var(--warning); }
+    .sev.MEDIO { background: var(--gray-100); color: var(--gray-600); }
+    .sev.BAJO { background: var(--brand-light); color: var(--brand-dark); }
+
+    .meta-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; padding: 14px 20px;
+      background: var(--gray-50); font-size: 12px; border-bottom: 1px solid var(--gray-100);
+    }
+    @media (max-width: 560px) { .meta-grid { grid-template-columns: 1fr; } }
+    .meta-grid dt { font-weight: 600; color: var(--gray-500); margin: 0; font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .meta-grid dd { margin: 4px 0 0; color: var(--gray-700); }
+
+    .finding-body { padding: 16px 20px 20px; font-size: 13px; color: var(--gray-600); }
+    .finding-body h4 { margin: 16px 0 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gray-500); }
+    .finding-body h4:first-child { margin-top: 0; }
+    .quote-box {
+      margin: 10px 0; padding: 12px 14px; background: var(--brand-light); border-radius: 8px;
+      font-style: italic; color: var(--gray-700); border-left: 3px solid var(--brand);
+    }
+    .change-box { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--gray-200); }
+    .change-box strong { color: var(--brand-dark); }
+    .criteria-list { margin: 8px 0 0; padding-left: 18px; }
+    .draft-box { margin-top: 12px; padding: 12px 14px; background: var(--purple-light); border-radius: 8px; font-size: 12px; color: var(--gray-700); }
+
+    .role-card { border: 1px solid var(--gray-200); border-radius: 12px; overflow: hidden; margin-bottom: 14px; background: #fff; }
+    .role-card h3 { margin: 0; padding: 12px 16px; font-family: "DM Sans", sans-serif; font-size: 14px; font-weight: 700; background: linear-gradient(180deg, var(--gray-50) 0%, #fff 100%); border-bottom: 1px solid var(--gray-200); }
+    .block-fric { padding: 12px 16px; background: var(--error-bg); border-left: 4px solid var(--error); }
+    .block-fric h4 { margin: 0 0 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--error); }
+    .block-ok { padding: 12px 16px; background: var(--brand-light); border-left: 4px solid var(--brand); }
+    .block-ok h4 { margin: 0 0 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--brand-dark); }
+    .role-foot { padding: 10px 16px; background: var(--gray-50); border-top: 1px solid var(--gray-200); font-size: 12px; color: var(--gray-600); }
+
+    .table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--gray-200); }
+    table.metrics { width: 100%; border-collapse: collapse; font-size: 12px; }
+    table.metrics thead { background: var(--gray-900); color: #fff; }
+    table.metrics th { text-align: left; padding: 10px 12px; font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+    table.metrics td { padding: 9px 12px; border-bottom: 1px solid var(--gray-100); }
+    table.metrics tbody tr:nth-child(even) { background: var(--gray-50); }
+
+    .next-row { border: 1px solid var(--gray-200); border-radius: 10px; margin-bottom: 10px; background: #fff; overflow: hidden; }
+    .next-row summary {
+      display: flex; align-items: center; gap: 12px; padding: 12px 14px; cursor: pointer;
+      list-style: none; font-size: 13px; color: var(--gray-900);
+    }
+    .next-row summary::-webkit-details-marker { display: none; }
+    .next-row summary::after { content: "Ver m\00e1s"; margin-left: auto; font-size: 11px; font-weight: 600; color: var(--brand-dark); }
+    .next-row[open] summary::after { content: "Ver menos"; }
+    .next-num { width: 26px; height: 26px; border-radius: 50%; background: var(--gray-900); color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .next-title { flex: 1; font-weight: 500; }
+    .eff { font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+    .eff.bajo { background: var(--brand-light); color: var(--brand-dark); }
+    .eff.medio { background: var(--warning-bg); color: #b54708; }
+    .eff.alto { background: var(--error-bg); color: var(--crit); }
+    .next-detail { padding: 0 14px 16px; border-top: 1px solid var(--gray-100); background: var(--gray-25); }
+
+    footer { text-align: center; font-size: 11px; color: var(--gray-500); margin-top: 32px; padding: 18px; border-top: 1px solid var(--gray-200); }
+    @media print { body { background: #fff; } .cover { break-inside: avoid; } .kpi-strip, .section { break-inside: avoid; } .chart-wrap { height: 220px; } }
+  </style>
+</head>
+<body>
+  <section class="cover" aria-label="Portada">
+    <div class="cover-inner">
+      <div class="cover-brand">
+        <div class="cover-logo">K</div>
+        <span class="cover-brand-txt" id="cover-kicker">Koin — Testing sintético</span>
+      </div>
+      <h1 class="cover-title" id="cover-product-title">Título del producto</h1>
+      <p class="cover-keyq" id="cover-key-question"></p>
+      <div class="cover-pills" id="cover-pills"></div>
+    </div>
+  </section>
+
+  <div class="doc-bar" id="doc-bar"></div>
+
+  <div class="wrap">
+    <div class="kpi-strip" id="kpi-strip"></div>
+
+    <div class="keyq" id="keyq-box"></div>
+
+    <article class="section">
+      <div class="section-h"><span class="section-num">01</span><h2>Resumen ejecutivo</h2></div>
+      <div class="section-body" id="sec-summary"></div>
+    </article>
+
+    <article class="section">
+      <div class="section-h"><span class="section-num">02</span><h2>Análisis visual — cohorte sintética</h2></div>
+      <div class="section-body">
+        <p style="margin: 0 0 16px; font-size: 13px; color: var(--gray-600);" id="charts-intro"></p>
+        <div class="charts-grid">
+          <figure class="figure">
+            <h3>Completitud del flujo por rol</h3>
+            <p class="sub">Barras apiladas — completaron vs. abandonaron</p>
+            <div class="chart-wrap"><canvas id="g1"></canvas></div>
+            <figcaption class="fig-cap">Figura 1. Completitud por rol (n = 5 por cohorte).</figcaption>
+          </figure>
+          <figure class="figure">
+            <h3>Fricciones detectadas por rol</h3>
+            <p class="sub">Total de eventos de fricción simulados</p>
+            <div class="chart-wrap"><canvas id="g2"></canvas></div>
+            <figcaption class="fig-cap">Figura 2. Fricciones por rol.</figcaption>
+          </figure>
+          <figure class="figure">
+            <h3>Severidad de hallazgos</h3>
+            <p class="sub" id="g3-sub"></p>
+            <div class="chart-wrap tall"><canvas id="g3"></canvas></div>
+            <figcaption class="fig-cap">Figura 3. Distribución por nivel de impacto.</figcaption>
+          </figure>
+          <figure class="figure">
+            <h3>Matriz esfuerzo × impacto</h3>
+            <p class="sub">Verde = quick win sugerido · Cuadrante superior-izquierdo = bajo esfuerzo, alto impacto</p>
+            <div class="chart-wrap tall"><canvas id="g4"></canvas></div>
+            <figcaption class="fig-cap">Figura 4. Priorización de hallazgos.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </article>
+
+    <article class="section">
+      <div class="section-h"><span class="section-num">03</span><h2>Hallazgos priorizados</h2></div>
+      <div class="section-body">
+        <p class="section-note" id="top-findings-note"></p>
+        <div id="top-findings-root"></div>
+      </div>
+    </article>
+
+    <article class="section">
+      <div class="section-h"><span class="section-num">04</span><h2>Análisis por rol</h2></div>
+      <div class="section-body" id="role-cards-root"></div>
+    </article>
+
+    <article class="section">
+      <div class="section-h"><span class="section-num">05</span><h2>Matriz de cohorte sintética</h2></div>
+      <div class="section-body">
+        <div class="table-wrap">
+          <table class="metrics">
+            <thead>
+              <tr>
+                <th>ID</th><th>Rol</th><th>Var.</th><th>Resultado</th><th>Paso máx.</th><th>Fricciones</th>
+              </tr>
+            </thead>
+            <tbody id="cohorte-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </article>
+
+    <article class="section">
+      <div class="section-h"><span class="section-num">06</span><h2>Próximos pasos sugeridos</h2></div>
+      <div class="section-body">
+        <p class="section-note">Todos los hallazgos ordenados por prioridad de roadmap. Expandí <strong>Ver más</strong> para ver la ficha completa (misma estructura que §03).</p>
+        <div id="next-steps-root"></div>
+      </div>
+    </article>
+
+    <footer id="footer"></footer>
+  </div>
+
+  <script type="application/json" id="report-data-json">
+{
+  "meta": {
+    "pageTitle": "Test sintético — Asistente VTEX · Autonomía de contactos",
+    "ref": "SYN-2026-03-26-VTEX-AUT",
+    "coverKicker": "Koin — Testing sintético",
+    "productTitle": "Chatbot de onboarding — Activación VTEX",
+    "keyQuestion": "¿El asistente permite que cualquier tipo de contacto de un merchant complete la activación sin soporte externo?",
+    "dateLabel": "26 mar 2026",
+    "modeLabel": "Completo · 25 usuarios · 5 por rol",
+    "productLabel": "Asistente de configuración VTEX + GTM",
+    "url": "localhost:5173 (dev)",
+    "docClassification": "Interno — Producto",
+    "cohortSize": 25,
+    "topLimit": 7,
+    "chartsIntro": "Cohorte de 25 usuarios sintéticos distribuidos en 5 roles representativos de los contactos reales de merchants. Cada rol tiene 5 variaciones (experiencia SaaS, tamaño de merchant, urgencia). Las gráficas reflejan la simulación completa del flujo de activación VTEX incluyendo el panel intro, la selección de scripts y el checklist final."
+  },
+  "summary": {
+    "lead": "**No, el asistente no permite que cualquier tipo de contacto complete la activación sin soporte externo.** De 25 usuarios simulados, 16 completaron el flujo (64%), pero la tasa varía drásticamente por rol: desde 20% en Comercial hasta 100% en Técnico. La barrera principal es la necesidad de acceso administrador a VTEX y a Google Tag Manager — permisos que los contactos no técnicos típicamente no poseen. La ruta de delegación existe pero no garantiza completitud.",
+    "bullets": [
+      {
+        "title": "Qué funciona bien",
+        "items": [
+          "El flujo paso a paso es claro y bien estructurado para quienes tienen los accesos necesarios",
+          "Los nodos contextuales (ctx_*) resuelven la mayoría de dudas conceptuales sin salir del flujo",
+          "La barra de progreso y la persistencia por email dan control y visibilidad",
+          "El troubleshooting (nodos debug_*) cubre los escenarios de error más comunes",
+          "La estimación de tiempo (15-20 min) establece expectativas realistas"
+        ]
+      },
+      {
+        "title": "Dónde falla",
+        "items": [
+          "No valida permisos de VTEX ni GTM antes de comenzar — los usuarios descubren la barrera a mitad de flujo",
+          "La opción 'Otra persona (IT / ecommerce)' genera un email pero no cierra el circuito de activación",
+          "No adapta el lenguaje ni la profundidad según el perfil del contacto",
+          "La elección sandbox vs producción confunde a roles no técnicos",
+          "No hay botón de copiar en los bloques de script — solo selección manual"
+        ]
+      },
+      {
+        "title": "Implicancia para el negocio",
+        "items": [
+          "Los contactos comerciales (primer touchpoint con el merchant) abandonan en 80% de los casos, generando tickets de soporte",
+          "La activación se atrasa cuando el primer contacto no puede resolver solo y debe escalar a IT",
+          "El flujo de delegación no tiene trazabilidad — no se sabe si el delegado completó o no"
+        ]
+      }
+    ]
+  },
+  "charts": {
+    "roles": ["Comercial", "PM / Onboarding", "Operaciones", "Producto / UX", "Técnico"],
+    "completaron": [1, 3, 3, 4, 5],
+    "abandonaron": [4, 2, 2, 1, 0],
+    "fricciones": [12, 8, 7, 9, 4],
+    "frictionColors": ["#D92D20", "#DC6803", "#10B132", "#7C3AED", "#2563EB"]
+  },
+  "findings": [
+    {
+      "id": "F-01",
+      "title": "Prerequisitos de permisos no se validan antes de iniciar el flujo",
+      "severity": "CRITICO",
+      "rolesAffected": ["Comercial", "PM / Onboarding", "Operaciones"],
+      "frequency": { "affected": 9, "denominator": 25, "label": "usuarios abandonaron por falta de permisos" },
+      "description": "El asistente menciona los prerequisitos (admin VTEX + cuenta GTM) en el nodo 'prereqs', pero esto ocurre después de que el usuario ya ingresó al flujo. Los usuarios no técnicos descubren que no pueden seguir cuando ya invirtieron tiempo, lo que genera frustración y abandono.",
+      "quote": "COM-A seleccionó 'Qué necesito antes de empezar', leyó que necesita acceso admin a VTEX, y dijo: 'Yo no tengo eso, me lo tiene que dar el equipo de sistemas'. Abandonó.",
+      "suggestedChange": "Agregar un checklist interactivo al ActivationIntroPanel que valide explícitamente: (1) ¿Tenés acceso admin a VTEX? (2) ¿Tenés acceso a GTM o podés crear una cuenta? Si responde 'no' a cualquiera, redirigir a la ruta de delegación con contexto.",
+      "businessImpact": "El 36% de la cohorte (9/25) abandonó directamente por esta causa. En producción, esto se traduce en tickets de soporte y demoras en la activación de merchants.",
+      "acceptanceCriteria": [
+        "El panel intro pregunta explícitamente por acceso VTEX admin y GTM antes del botón 'Ir al asistente'",
+        "Si el usuario indica que no tiene algún acceso, se muestra la ruta de delegación con instrucciones específicas",
+        "El usuario que no tiene permisos NO entra al chat principal sin resolver primero el acceso"
+      ],
+      "contentDraft": "Antes de empezar, confirmá que tenés: ✓ Acceso de administrador al panel de VTEX (podés instalar apps) ✓ Acceso a Google Tag Manager (o podés crear una cuenta). Si no tenés alguno de estos accesos, podés compartir el asistente con quien sí los tenga.",
+      "effort": 2,
+      "impact": 5,
+      "quickWin": false
+    },
+    {
+      "id": "F-02",
+      "title": "La ruta de delegación no garantiza completitud del flujo",
+      "severity": "ALTO",
+      "rolesAffected": ["Comercial", "PM / Onboarding"],
+      "frequency": { "affected": 6, "denominator": 10, "label": "usuarios de roles no técnicos necesitaron delegar" },
+      "description": "Cuando el usuario selecciona 'Otra persona (IT / ecommerce)' en el panel intro, se genera un borrador de email con mailto. Pero: (1) no hay forma de saber si el delegado recibió o completó el flujo, (2) el usuario original queda en un estado ambiguo, (3) la plantilla del email no incluye el enlace directo al asistente con contexto.",
+      "quote": "COM-D seleccionó delegar, editó el mensaje, lo envió y luego dijo: 'Y ahora qué? No sé si lo hizo o no'. Esperó 2 días y terminó llamando a soporte Koin.",
+      "suggestedChange": "Implementar un flujo de delegación con trazabilidad: (1) generar un link único para el delegado, (2) mostrar al usuario original el estado de la delegación, (3) notificar cuando el delegado complete. En una versión mínima, al menos incluir el link directo al asistente en el email y permitir al usuario original ver el progreso.",
+      "businessImpact": "Sin trazabilidad, la delegación es un punto ciego. El merchant percibe que 'Koin no da visibilidad' y el onboarding se demora.",
+      "acceptanceCriteria": [
+        "El email de delegación incluye un enlace funcional directo al asistente",
+        "El usuario que delegó puede ver si el delegado ya empezó o completó",
+        "Si el delegado no actúa en X días, se muestra un recordatorio al usuario original"
+      ],
+      "effort": 2.5,
+      "impact": 4,
+      "quickWin": false
+    },
+    {
+      "id": "F-03",
+      "title": "Sin detección de rol ni adaptación del lenguaje al perfil",
+      "severity": "ALTO",
+      "rolesAffected": ["Comercial", "PM / Onboarding", "Operaciones", "Producto / UX", "Técnico"],
+      "frequency": { "affected": 15, "denominator": 25, "label": "usuarios experimentaron fricción por lenguaje inadecuado a su perfil" },
+      "description": "El asistente usa el mismo nivel de detalle y terminología para todos los usuarios. Los técnicos lo encuentran excesivamente verbose ('ya sé lo que es un tag'), mientras los comerciales necesitan aún más contexto ('qué es un contenedor'). No hay adaptación.",
+      "quote": "DEV-B dijo: 'Esto me podría haber tomado 3 minutos si me dieran el script y la ruta del activador directo'. COM-E dijo: 'Cuando dice HTML personalizado no sé a qué se refiere, me da miedo romper algo'.",
+      "suggestedChange": "Agregar una pregunta de perfil al inicio ('¿Cuál es tu rol?') y adaptar: (1) nivel de detalle de las explicaciones, (2) visibilidad de nodos contextuales, (3) opción de 'modo rápido' para técnicos que saltee explicaciones intermedias.",
+      "businessImpact": "La falta de personalización penaliza la percepción de producto tanto para usuarios básicos (se sienten perdidos) como avanzados (se sienten subestimados).",
+      "acceptanceCriteria": [
+        "El panel intro incluye una pregunta sobre el perfil técnico del usuario",
+        "Los nodos del KB muestran/ocultan explicaciones según el perfil seleccionado",
+        "Existe un 'modo rápido' que va directo a los pasos operativos sin contextos intermedios"
+      ],
+      "effort": 3,
+      "impact": 4,
+      "quickWin": false
+    },
+    {
+      "id": "F-04",
+      "title": "Barrera de acceso VTEX admin sin camino alternativo",
+      "severity": "ALTO",
+      "rolesAffected": ["Comercial", "PM / Onboarding", "Operaciones"],
+      "frequency": { "affected": 7, "denominator": 15, "label": "usuarios de roles no técnicos frenaron por falta de admin VTEX" },
+      "description": "El paso 1 requiere instalar la app de GTM desde el App Store de VTEX, lo cual necesita rol de Administrador. El nodo 'app_no_encontrada' lo menciona, pero como solución sugiere 'contactá a tu Account Manager de VTEX' — que es soporte externo, exactamente lo que la pregunta clave busca evitar.",
+      "quote": "PM-E intentó buscar la app en VTEX, no la encontró, siguió al nodo 'app_no_encontrada', leyó que necesita rol de Administrador y dijo: 'Yo soy PM, no tengo ese permiso'. Abandonó.",
+      "suggestedChange": "Ofrecer dos caminos desde el inicio: (1) 'Tengo acceso admin a VTEX' → flujo actual, (2) 'No tengo admin' → flujo guiado para solicitar el acceso al admin de VTEX del merchant, con plantilla de mensaje y pasos claros.",
+      "businessImpact": "Casi la mitad (47%) de los usuarios no técnicos abandonan específicamente por este punto. Es la mayor fuente de abandono después de la falta de validación de permisos.",
+      "acceptanceCriteria": [
+        "El flujo ofrece un camino explícito para usuarios sin admin VTEX",
+        "El camino alternativo incluye una plantilla para solicitar permisos al admin",
+        "El usuario puede continuar el flujo una vez que obtiene los permisos sin perder progreso"
+      ],
+      "effort": 2,
+      "impact": 4,
+      "quickWin": false
+    },
+    {
+      "id": "F-05",
+      "title": "Terminología GTM causa fricción recurrente en roles no técnicos",
+      "severity": "MEDIO",
+      "rolesAffected": ["Comercial", "PM / Onboarding", "Operaciones"],
+      "frequency": { "affected": 10, "denominator": 15, "label": "usuarios no técnicos tuvieron dudas con términos de GTM" },
+      "description": "Términos como 'activador', 'tag', 'HTML personalizado', 'contenedor' y 'vista de página' generan fricción. Los nodos ctx_* existen para explicar, pero el usuario tiene que saber que puede preguntar por texto libre — muchos solo usan los botones.",
+      "quote": "OPS-A llegó al paso 3 y cuando el asistente dijo 'elegí HTML personalizado', no supo qué hacer: 'Hay como 20 opciones en ese menú, no quiero elegir la equivocada y romper algo'.",
+      "suggestedChange": "Agregar tooltips inline en los mensajes del bot: al mencionar 'HTML personalizado', incluir un enlace/tooltip que explique qué es sin salir del paso actual. Reducir la dependencia del texto libre para acceder a contextos.",
+      "businessImpact": "La fricción terminológica no siempre causa abandono, pero sí alarga el tiempo de completitud y genera inseguridad que puede llevar a errores de configuración.",
+      "acceptanceCriteria": [
+        "Los términos técnicos clave en los mensajes del bot tienen un tooltip o enlace explicativo inline",
+        "El tooltip se muestra sin navegar a otro nodo del chat",
+        "Al menos los 5 términos más frecuentes tienen tooltip: activador, tag, HTML personalizado, contenedor, ruta de página"
+      ],
+      "effort": 1.5,
+      "impact": 3,
+      "quickWin": true
+    },
+    {
+      "id": "F-06",
+      "title": "El flujo asume acceso simultáneo a VTEX y GTM sin indicarlo",
+      "severity": "MEDIO",
+      "rolesAffected": ["Comercial", "PM / Onboarding", "Operaciones", "Producto / UX"],
+      "frequency": { "affected": 8, "denominator": 20, "label": "usuarios de los 4 primeros roles no tenían ambos sistemas abiertos" },
+      "description": "El paso 1 se hace en VTEX Admin y el paso 2 en GTM. El asistente no avisa que conviene tener ambos abiertos en pestañas distintas. Varios usuarios completaron el paso 1 en VTEX, cerraron, y al llegar al paso 2 tuvieron que buscar cómo entrar a GTM.",
+      "quote": "PM-A completó paso 1 en VTEX, cerró la pestaña, y en el paso 2 dijo: 'Ahora tengo que entrar a otro sitio? Tendría que haberme avisado al principio'.",
+      "suggestedChange": "Agregar un tip al inicio del flujo (en welcome o prereqs) que recomiende tener abiertas las dos pestañas: VTEX Admin y tagmanager.google.com.",
+      "businessImpact": "Fricción menor pero evitable. Ahorra tiempo y reduce la percepción de un proceso fragmentado.",
+      "acceptanceCriteria": [
+        "El nodo welcome o prereqs incluye un tip: 'Recomendación: abrí VTEX Admin y tagmanager.google.com en dos pestañas'",
+        "El tip aparece antes de comenzar los pasos operativos"
+      ],
+      "effort": 1,
+      "impact": 3,
+      "quickWin": true
+    },
+    {
+      "id": "F-07",
+      "title": "Sin estimación de tiempo por paso individual",
+      "severity": "BAJO",
+      "rolesAffected": ["PM / Onboarding", "Operaciones"],
+      "frequency": { "affected": 6, "denominator": 10, "label": "usuarios de PM y Ops quisieron saber cuánto faltaba por paso" },
+      "description": "El asistente da un estimado general de 15-20 min, pero no dice cuánto toma cada paso. Los PMs y Ops quieren planificar y reportar avance granular.",
+      "quote": "PM-D preguntó: 'Cuánto me falta?' al llegar al paso 3. La barra mostraba 60% pero no sabía si le faltaban 3 minutos o 10.",
+      "suggestedChange": "Agregar una estimación de tiempo a cada paso principal: Paso 1 (~5 min), Paso 2 (~3 min), Paso 3 (~5 min), Paso 4 (~5 min).",
+      "businessImpact": "Mejora la percepción de control y permite al usuario planificar su sesión, especialmente si tiene que pausar y retomar.",
+      "acceptanceCriteria": [
+        "Cada paso principal muestra una estimación de tiempo entre paréntesis en el título",
+        "La estimación se basa en el tiempo promedio observado en la cohorte"
+      ],
+      "effort": 1,
+      "impact": 2,
+      "quickWin": true
+    },
+    {
+      "id": "F-08",
+      "title": "'Cambiar respuestas iniciales' borra todo el progreso del chat",
+      "severity": "BAJO",
+      "rolesAffected": ["PM / Onboarding", "Producto / UX"],
+      "frequency": { "affected": 3, "denominator": 10, "label": "usuarios quisieron cambiar respuestas sin perder progreso" },
+      "description": "El botón 'Cambiar respuestas iniciales' en el header del chat muestra un confirm() y si el usuario acepta, borra todo el progreso (clearActivationState). Usuarios que solo querían cambiar la respuesta de GTM instalado perdieron todo el avance.",
+      "quote": "UX-C notó que había respondido 'No estoy seguro' sobre GTM pero ahora sabía que sí tenía GTM. Tocó 'Cambiar respuestas', perdió el progreso de 3 pasos y dijo: 'Esto es un castigo por querer ser preciso'.",
+      "suggestedChange": "Permitir cambiar las respuestas del intro panel sin borrar el progreso del chat. El intro panel debería ser editable de forma independiente.",
+      "businessImpact": "Afecta la confianza del usuario en el sistema de persistencia. Si saben que cualquier corrección borra todo, van a evitar usar la funcionalidad.",
+      "acceptanceCriteria": [
+        "Cambiar respuestas iniciales NO borra el progreso del chat",
+        "Las respuestas del panel intro se pueden editar desde un drawer/modal sin resetear el chat",
+        "El estado del chat se preserva cuando se actualizan las respuestas del intro"
+      ],
+      "effort": 1.5,
+      "impact": 2,
+      "quickWin": true
+    },
+    {
+      "id": "F-09",
+      "title": "Sin botón de copiar en bloques de script",
+      "severity": "MEDIO",
+      "rolesAffected": ["Operaciones", "Producto / UX", "Técnico"],
+      "frequency": { "affected": 11, "denominator": 25, "label": "usuarios necesitaron copiar el script y no encontraron botón" },
+      "description": "Los nodos script_sandbox y script_prod muestran el script en un bloque <pre>, pero no hay botón 'Copiar'. Los usuarios deben seleccionar manualmente el texto, lo cual es propenso a errores (copiar de más o de menos).",
+      "quote": "DEV-A dijo: 'El script es una línea, pero cuando lo selecciono para copiar a veces agarro texto de más'. OPS-D dijo: 'Pensé que había un botón de copiar como en la documentación de Stripe'.",
+      "suggestedChange": "Agregar un botón 'Copiar' con feedback visual (ícono clipboard → checkmark) a los bloques <pre> de los nodos de script. Usar navigator.clipboard.writeText.",
+      "businessImpact": "Un error al copiar el script genera un fallo silencioso en la integración que puede tardar días en detectarse. La UX moderna establece que los snippets de código tengan botón de copiar.",
+      "acceptanceCriteria": [
+        "Los bloques <pre> en nodos de script tienen un botón 'Copiar' visible",
+        "Al hacer clic, se copia el texto exacto del script al portapapeles",
+        "Se muestra feedback visual ('Copiado!') durante 2 segundos"
+      ],
+      "effort": 1,
+      "impact": 3,
+      "quickWin": true
+    },
+    {
+      "id": "F-10",
+      "title": "Checklist final decorativo — no valida estado técnico real",
+      "severity": "MEDIO",
+      "rolesAffected": ["PM / Onboarding", "Operaciones", "Producto / UX"],
+      "frequency": { "affected": 8, "denominator": 15, "label": "usuarios asumieron que el checklist verificaba algo real" },
+      "description": "El nodo 'checklist' muestra 6 ítems con checkmarks verdes, pero son estáticos — siempre aparecen como completados sin importar si el usuario realmente hizo cada paso. Esto genera una falsa sensación de seguridad.",
+      "quote": "OPS-B vio el checklist y dijo: 'Ah, entonces ya está todo verificado automáticamente'. No revisó si el tag se activaba en la vista previa porque pensó que el checklist lo había validado.",
+      "suggestedChange": "En una primera versión, agregar un disclaimer: 'Este checklist es de referencia — verificá cada punto manualmente'. A futuro, conectar con la API de GTM para validar estado real.",
+      "businessImpact": "Un merchant que marca la activación como completa sin validar puede descubrir semanas después que el script no funciona, afectando la tasa de fraude de su tienda.",
+      "acceptanceCriteria": [
+        "El checklist incluye un disclaimer visible: 'Verificá cada punto antes de continuar'",
+        "Los checkmarks no están pre-marcados — el usuario los marca manualmente",
+        "El botón para continuar al nodo 'fin' se habilita solo cuando todos los ítems están marcados"
+      ],
+      "effort": 2,
+      "impact": 3,
+      "quickWin": false
+    },
+    {
+      "id": "F-11",
+      "title": "Elección sandbox / producción confusa para roles no técnicos",
+      "severity": "ALTO",
+      "rolesAffected": ["Comercial", "PM / Onboarding", "Operaciones"],
+      "frequency": { "affected": 9, "denominator": 15, "label": "usuarios no técnicos no entendieron la diferencia" },
+      "description": "En el paso 3, el asistente pregunta '¿Qué script necesitás?' con opciones: 'Sandbox', 'Producción', '¿Cuál debería usar?'. Los usuarios no técnicos no entienden los conceptos de ambientes y temen elegir mal.",
+      "quote": "COM-C preguntó: 'Si elijo mal, rompo algo en la tienda?' OPS-A dijo: 'Sandbox suena a que es de prueba, pero yo quiero que funcione de verdad. ¿Elijo producción directamente?'.",
+      "suggestedChange": "Reformular la pregunta: en vez de preguntar sandbox vs producción, recomendar siempre el camino seguro (sandbox primero, luego producción) y presentarlo como un flujo único en dos fases, no como una elección.",
+      "businessImpact": "Un usuario que elige producción sin probar primero puede generar falsos positivos de fraude en compras reales. Un usuario que duda puede abandonar el flujo.",
+      "acceptanceCriteria": [
+        "El paso 3 presenta el flujo como: 'Primero instalamos el script de prueba, y después lo cambiás al definitivo'",
+        "No se presenta como una elección binaria sino como un proceso secuencial",
+        "El nodo sandbox_vs_prod se muestra solo si el usuario pregunta explícitamente"
+      ],
+      "effort": 1.5,
+      "impact": 4,
+      "quickWin": true
+    },
+    {
+      "id": "F-12",
+      "title": "Contexto insuficiente al retomar sesión guardada",
+      "severity": "BAJO",
+      "rolesAffected": ["PM / Onboarding", "Operaciones"],
+      "frequency": { "affected": 4, "denominator": 10, "label": "usuarios retomaron y no recordaban qué habían hecho" },
+      "description": "El modal de retoma dice 'Tenías el asistente avanzado en: [nombre del paso]', pero no da contexto sobre qué se completó antes. Los usuarios que vuelven después de días no recuerdan qué pasos ya hicieron.",
+      "quote": "PM-D retomó después de simular 3 días de pausa y dijo: 'Me dice paso 3, pero no sé si ya hice lo del paso 1 y 2 o si tengo que verificar'.",
+      "suggestedChange": "Mostrar un mini-resumen de los pasos completados junto al modal de retoma: 'Ya completaste: ✓ GTM instalado en VTEX ✓ Regla creada. Te falta: tag con script + publicar'.",
+      "businessImpact": "Sin contexto de retoma, el usuario puede repetir pasos ya hechos (ineficiente) o saltear verificaciones importantes.",
+      "acceptanceCriteria": [
+        "El modal de retoma incluye una lista de pasos completados y pendientes",
+        "La lista usa las mismas etiquetas que los pasos del flujo",
+        "El usuario puede elegir retomar o empezar de nuevo con información suficiente para decidir"
+      ],
+      "effort": 1,
+      "impact": 2,
+      "quickWin": true
+    }
+  ],
+  "roleCards": [
+    {
+      "title": "Comercial / Account Manager",
+      "fricciones": [
+        "4 de 5 abandonaron: la barrera de permisos VTEX admin y GTM es insalvable sin soporte técnico",
+        "La terminología de GTM genera confusión inmediata — 'contenedor', 'activador', 'tag' son palabras desconocidas",
+        "La opción de delegar genera un email pero no cierra el circuito: el usuario queda sin visibilidad ni control",
+        "La elección sandbox/producción paraliza — miedo a 'romper algo en la tienda'"
+      ],
+      "ok": [
+        "El panel intro con tiempo estimado genera buena primera impresión",
+        "La persistencia por email permite retomar",
+        "El bot tiene tono amigable y no técnico en los mensajes generales"
+      ],
+      "priority": "Agregar validación de accesos al inicio y ofrecer delegación con trazabilidad. Este rol es el primer contacto con el merchant — su experiencia define la percepción de Koin."
+    },
+    {
+      "title": "PM / Onboarding",
+      "fricciones": [
+        "2 de 5 abandonaron por falta de acceso admin VTEX — tienen visión del proceso pero no permisos técnicos",
+        "La visión general de 4 pasos es buena pero carece de tiempos individuales por paso",
+        "No hay forma de trackear si la delegación se completó",
+        "El modal de retoma no da suficiente contexto sobre qué ya se hizo"
+      ],
+      "ok": [
+        "La barra de progreso les da la visibilidad y control que buscan",
+        "Los nodos contextuales (ctx_*) resuelven dudas sin salir del flujo",
+        "La opción de retomar sesión es muy valorada",
+        "La estructura de 4 pasos + checklist se alinea con su forma de trabajar"
+      ],
+      "priority": "Incluir checklist de prerequisitos que valide accesos antes de empezar. Agregar tiempos por paso y mejorar el modal de retoma con contexto completo."
+    },
+    {
+      "title": "Operaciones / Backoffice",
+      "fricciones": [
+        "Terminología como 'HTML personalizado' o 'activador' no coincide con su vocabulario habitual",
+        "El paso de pegar script requiere familiaridad con interfaces tipo IDE — genera inseguridad",
+        "La falta de botón copiar en scripts obliga a selección manual propensa a errores",
+        "El checklist final da falsa seguridad (parece que verificó algo que en realidad no verificó)"
+      ],
+      "ok": [
+        "El flujo paso a paso es compatible con su estilo metódico y secuencial",
+        "La opción de verificar GTM instalado (nodo verificar_gtm) les da seguridad intermedia",
+        "Los pasos de debug están bien estructurados y cubren errores comunes",
+        "Las instrucciones dentro de cada paso son claras y numeradas"
+      ],
+      "priority": "Agregar tooltips para términos técnicos y botón de copiar script. Convertir el checklist en algo interactivo y real."
+    },
+    {
+      "title": "Producto / UX",
+      "fricciones": [
+        "La elección sandbox vs producción no tiene suficiente diferenciación visual ni guía clara",
+        "El checklist final es decorativo — todos los checks están pre-marcados sin validación real",
+        "La UI de botones no siempre prioriza visualmente la opción recomendada",
+        "El texto del bot no usa consistentemente el mismo nivel de formalidad"
+      ],
+      "ok": [
+        "La estructura general del flujo es clara, lógica y bien pensada",
+        "El troubleshooting con nodos de debug es completo y cubre los casos más comunes",
+        "Los textos son concisos, bien redactados y evitan tecnicismos innecesarios",
+        "La barra de progreso y el modal de éxito final son efectivos visualmente"
+      ],
+      "priority": "Mejorar diferenciación visual sandbox/prod. Convertir checklist en interactivo. Agregar consistencia en tono y priorización visual de opciones."
+    },
+    {
+      "title": "Técnico / Desarrollador",
+      "fricciones": [
+        "Prefieren documentación técnica directa sobre el formato de chat guiado paso a paso",
+        "El asistente no permite saltear fácilmente pasos ya conocidos una vez iniciado",
+        "Falta un botón de copiar script — esperan la UX de documentación técnica moderna (Stripe, Twilio)",
+        "Los nodos contextuales (ctx_*) tienen info útil pero son redundantes para este perfil"
+      ],
+      "ok": [
+        "Los scripts están correctamente formateados y las URLs son claras",
+        "La explicación de /checkout/orderPlaced es técnicamente precisa",
+        "Los nodos de debug cubren los escenarios técnicos más comunes (CSP, tag no fired)",
+        "La opción de ir directo al paso 2 o 3 desde welcome permite saltar pasos",
+        "El nombre del tag (redirectStrategiesKoinPageView) sigue convención de naming"
+      ],
+      "priority": "Agregar botón copiar y enlazar documentación técnica directa. Considerar un 'modo rápido' que presente solo la info esencial para dev."
+    }
+  ],
+  "cohort": [
+    ["COM-A", "Comercial", "Novato · Med · Alta", "Abandonó", "prereqs", 3],
+    ["COM-B", "Comercial", "Inter · Grande · Media", "Abandonó", "paso1_vtex", 3],
+    ["COM-C", "Comercial", "Experto · Peq · Baja", "Completó", "fin", 2],
+    ["COM-D", "Comercial", "Inter · Grande · Alta", "Abandonó", "paso2_activador", 2],
+    ["COM-E", "Comercial", "Novato · Grande · Media", "Abandonó", "prereqs", 2],
+    ["PM-A", "PM / Onboarding", "Novato · Med · Alta", "Abandonó", "paso2_activador", 2],
+    ["PM-B", "PM / Onboarding", "Inter · Grande · Media", "Completó", "fin", 1],
+    ["PM-C", "PM / Onboarding", "Experto · Peq · Baja", "Completó", "fin", 1],
+    ["PM-D", "PM / Onboarding", "Inter · Grande · Alta", "Completó", "fin", 2],
+    ["PM-E", "PM / Onboarding", "Novato · Grande · Media", "Abandonó", "paso1_vtex", 2],
+    ["OPS-A", "Operaciones", "Novato · Med · Alta", "Abandonó", "paso3_tag", 2],
+    ["OPS-B", "Operaciones", "Inter · Grande · Media", "Completó", "fin", 1],
+    ["OPS-C", "Operaciones", "Experto · Peq · Baja", "Completó", "fin", 1],
+    ["OPS-D", "Operaciones", "Inter · Grande · Alta", "Completó", "fin", 2],
+    ["OPS-E", "Operaciones", "Novato · Grande · Media", "Abandonó", "paso2_activador", 1],
+    ["UX-A", "Producto / UX", "Novato · Med · Alta", "Completó", "fin", 2],
+    ["UX-B", "Producto / UX", "Inter · Grande · Media", "Completó", "fin", 2],
+    ["UX-C", "Producto / UX", "Experto · Peq · Baja", "Completó", "fin", 2],
+    ["UX-D", "Producto / UX", "Inter · Grande · Alta", "Completó", "fin", 2],
+    ["UX-E", "Producto / UX", "Novato · Grande · Media", "Abandonó", "paso1_vtex", 1],
+    ["DEV-A", "Técnico", "Novato · Med · Alta", "Completó", "fin", 1],
+    ["DEV-B", "Técnico", "Inter · Grande · Media", "Completó", "fin", 0],
+    ["DEV-C", "Técnico", "Experto · Peq · Baja", "Completó", "fin", 1],
+    ["DEV-D", "Técnico", "Inter · Grande · Alta", "Completó", "fin", 1],
+    ["DEV-E", "Técnico", "Novato · Grande · Media", "Completó", "fin", 1]
+  ]
+}
+  </script>
+  <script>
+    const REPORT_DATA = JSON.parse(document.getElementById("report-data-json").textContent);
+
+    const SEV_RANK = { CRITICO: 4, ALTO: 3, MEDIO: 2, BAJO: 1 };
+
+    function escapeHtml(s) {
+      if (s == null) return "";
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function formatLead(s) {
+      if (!s) return "";
+      const parts = String(s).split(/\*\*(.+?)\*\*/g);
+      return parts
+        .map((p, i) => (i % 2 === 1 ? "<strong>" + escapeHtml(p) + "</strong>" : escapeHtml(p)))
+        .join("");
+    }
+
+    function effortClass(effort) {
+      const e = Number(effort);
+      if (e <= 1.5) return { cls: "bajo", label: "Esfuerzo bajo" };
+      if (e <= 2.5) return { cls: "medio", label: "Esfuerzo medio" };
+      return { cls: "alto", label: "Esfuerzo alto" };
+    }
+
+    function compareTop(a, b) {
+      const sa = a.impact / Math.max(0.5, a.effort);
+      const sb = b.impact / Math.max(0.5, b.effort);
+      if (sb !== sa) return sb - sa;
+      return (SEV_RANK[b.severity] || 0) - (SEV_RANK[a.severity] || 0);
+    }
+
+    function pickTopFindings(findings, limit) {
+      return [...findings].sort(compareTop).slice(0, limit);
+    }
+
+    function sortRoadmap(findings) {
+      return [...findings].sort((a, b) => {
+        if (b.impact !== a.impact) return b.impact - a.impact;
+        if (a.effort !== b.effort) return a.effort - b.effort;
+        return (SEV_RANK[b.severity] || 0) - (SEV_RANK[a.severity] || 0);
+      });
+    }
+
+    function severityCounts(findings) {
+      const o = { CRITICO: 0, ALTO: 0, MEDIO: 0, BAJO: 0 };
+      findings.forEach((f) => {
+        if (o[f.severity] !== undefined) o[f.severity]++;
+      });
+      return o;
+    }
+
+    function renderFindingInner(f) {
+      const freq = (f.frequency.affected + "/" + f.frequency.denominator + " " + (f.frequency.label || "")).trim();
+      let html = '<div class="meta-grid">';
+      html += '<div><dt>Roles afectados</dt><dd>' + escapeHtml(f.rolesAffected.join(", ")) + '</dd></div>';
+      html += '<div><dt>Frecuencia</dt><dd>' + escapeHtml(freq) + '</dd></div>';
+      html += "</div>";
+      html += '<div class="finding-body">';
+      html += "<h4>Descripción</h4>";
+      html += "<p>" + escapeHtml(f.description) + "</p>";
+      if (f.quote) {
+        html += '<div class="quote-box">\u201C' + escapeHtml(f.quote) + '\u201D</div>';
+      }
+      html += '<div class="change-box"><strong>Cambio sugerido:</strong> ';
+      html += escapeHtml(f.suggestedChange);
+      html += "</div>";
+      html += "<h4>Impacto en negocio</h4>";
+      html += "<p>" + escapeHtml(f.businessImpact) + "</p>";
+      html += "<h4>Criterios de aceptación</h4>";
+      html += '<ul class="criteria-list">';
+      (f.acceptanceCriteria || []).forEach(function(c) {
+        html += "<li>" + escapeHtml(c) + "</li>";
+      });
+      html += "</ul>";
+      if (f.contentDraft) {
+        html += "<h4>Contenido sugerido (borrador)</h4>";
+        html += '<div class="draft-box">' + escapeHtml(f.contentDraft) + '</div>';
+      }
+      html += "</div>";
+      return html;
+    }
+
+    function renderFindingCard(f, index) {
+      var inner = renderFindingInner(f);
+      var sev = f.severity;
+      return (
+        '<div class="finding-card-rich" id="finding-' + escapeHtml(f.id) + '">' +
+        '<div class="finding-card-head">' +
+        '<span class="finding-badge-num">' + index + '</span>' +
+        '<div class="finding-titles-wrap">' +
+        '<span class="finding-id">' + escapeHtml(f.id) + '</span>' +
+        '<h3>' + escapeHtml(f.title) + '</h3>' +
+        '</div>' +
+        '<span class="sev ' + escapeHtml(sev) + '">' + escapeHtml(sev) + '</span>' +
+        '</div>' + inner + '</div>'
+      );
+    }
+
+    function renderRoleCards(cards) {
+      return cards
+        .map(function(r) {
+          return (
+            '<div class="role-card"><h3>' + escapeHtml(r.title) + '</h3>' +
+            '<div class="block-fric"><h4>Fricciones</h4><ul>' + r.fricciones.map(function(x){ return '<li>' + escapeHtml(x) + '</li>'; }).join("") + '</ul></div>' +
+            '<div class="block-ok"><h4>Qué funcionó</h4><ul>' + r.ok.map(function(x){ return '<li>' + escapeHtml(x) + '</li>'; }).join("") + '</ul></div>' +
+            '<div class="role-foot"><strong>Prioridad:</strong> ' + escapeHtml(r.priority) + '</div></div>'
+          );
+        })
+        .join("");
+    }
+
+    function init() {
+      var d = REPORT_DATA;
+      var m = d.meta;
+      document.title = m.pageTitle;
+
+      document.getElementById("cover-kicker").textContent = m.coverKicker;
+      document.getElementById("cover-product-title").textContent = m.productTitle;
+      document.getElementById("cover-key-question").textContent = m.keyQuestion;
+
+      var pills = document.getElementById("cover-pills");
+      pills.innerHTML = [
+        ["Fecha", m.dateLabel],
+        ["Modo", m.modeLabel],
+        ["Producto", m.productLabel],
+        ["URL", m.url],
+      ]
+        .map(function(pair) { return '<span class="pill"><strong>' + escapeHtml(pair[0]) + ':</strong> ' + escapeHtml(pair[1]) + '</span>'; })
+        .join("");
+
+      document.getElementById("doc-bar").innerHTML =
+        '<span><strong>Producto</strong> \u00b7 ' + escapeHtml(m.productLabel) + '</span>' +
+        '<span><strong>URL</strong> \u00b7 <code>' + escapeHtml(m.url) + '</code></span>' +
+        '<span><strong>Clasificación</strong> \u00b7 ' + escapeHtml(m.docClassification) + '</span>' +
+        '<span><strong>Ref.</strong> \u00b7 ' + escapeHtml(m.ref) + '</span>';
+
+      var comp = d.charts.completaron.reduce(function(a, b) { return a + b; }, 0);
+      var ab = d.charts.abandonaron.reduce(function(a, b) { return a + b; }, 0);
+      var fr = d.charts.fricciones.reduce(function(a, b) { return a + b; }, 0);
+      var n = m.cohortSize;
+      var nf = d.findings.length;
+      var topK = Math.min(m.topLimit || 7, nf);
+      var topList = pickTopFindings(d.findings, topK);
+
+      var kpis = [
+        { cls: "kpi--green", num: comp + '<small>/' + n + '</small>', lbl: "Completaron el flujo", sub: "" },
+        { cls: "kpi--red", num: ab + '<small>/' + n + '</small>', lbl: "Abandonaron", sub: "" },
+        { cls: "kpi--amber", num: String(fr), lbl: "Fricciones detectadas", sub: "\u03a3 eventos simulados" },
+        { cls: "kpi--purple", num: String(nf), lbl: "Hallazgos detectados", sub: "Top " + topK + " en \u00a703 (matriz)" },
+      ];
+      document.getElementById("kpi-strip").innerHTML = kpis
+        .map(function(k) {
+          return (
+            '<div class="kpi ' + k.cls + '"><div class="num">' + k.num + '</div>' +
+            '<div class="lbl">' + escapeHtml(k.lbl) + '</div>' +
+            (k.sub ? '<div class="sub">' + escapeHtml(k.sub) + '</div>' : "") +
+            '<div class="kpi-bar"></div></div>'
+          );
+        })
+        .join("");
+
+      document.getElementById("keyq-box").innerHTML =
+        '<strong>Pregunta clave del estudio.</strong> ' + escapeHtml(m.keyQuestion);
+
+      var sum = d.summary;
+      var sb = "";
+      if (sum.bullets && sum.bullets.length) {
+        sb =
+          '<ul class="exec-bullets">' +
+          sum.bullets
+            .map(function(b) {
+              return '<li><strong>' + escapeHtml(b.title) + '</strong><ul>' + b.items.map(function(i) { return '<li>' + escapeHtml(i) + '</li>'; }).join("") + '</ul></li>';
+            })
+            .join("") +
+          "</ul>";
+      }
+      document.getElementById("sec-summary").innerHTML = '<p class="exec-lead">' + formatLead(sum.lead) + '</p>' + sb;
+
+      document.getElementById("charts-intro").textContent = m.chartsIntro || "";
+
+      document.getElementById("top-findings-note").textContent =
+        "Top " + topList.length + " por matriz esfuerzo \u00d7 impacto (desempate por severidad). Total de hallazgos documentados: " + nf + ".";
+
+      document.getElementById("top-findings-root").innerHTML = topList.map(function(f, i) { return renderFindingCard(f, i + 1); }).join("");
+
+      document.getElementById("role-cards-root").innerHTML = renderRoleCards(d.roleCards || []);
+
+      document.getElementById("cohorte-body").innerHTML = (d.cohort || [])
+        .map(function(row) {
+          var id = row[0], rol = row[1], v = row[2], res = row[3], paso = row[4], fricc = row[5];
+          return (
+            '<tr><td><strong>' + escapeHtml(id) + '</strong></td><td>' + escapeHtml(rol) + '</td><td>' + escapeHtml(v) + '</td>' +
+            '<td>' + escapeHtml(res) + '</td><td><code>' + escapeHtml(paso) + '</code></td><td>' + escapeHtml(String(fricc)) + '</td></tr>'
+          );
+        })
+        .join("");
+
+      var sc = severityCounts(d.findings);
+      document.getElementById("g3-sub").textContent = "Distribución de los " + nf + " hallazgos documentados";
+
+      var ordered = sortRoadmap(d.findings);
+      document.getElementById("next-steps-root").innerHTML = ordered
+        .map(function(f, i) {
+          var ef = effortClass(f.effort);
+          return (
+            '<details class="next-row" id="next-' + escapeHtml(f.id) + '">' +
+            '<summary><span class="next-num">' + (i + 1) + '</span><span class="next-title">' + escapeHtml(f.title) + '</span>' +
+            '<span class="eff ' + ef.cls + '">' + ef.label + '</span></summary>' +
+            '<div class="next-detail">' + renderFindingInner(f) + '</div></details>'
+          );
+        })
+        .join("");
+
+      document.getElementById("footer").innerHTML =
+        '<div style="font-weight:600;color:var(--gray-700);margin-bottom:4px;">Koin \u00b7 Onboarding &amp; activación</div>' +
+        'Ref. ' + escapeHtml(m.ref) + ' \u00b7 ' + escapeHtml(m.url) + ' \u00b7 <code>SYNTHETIC_USERS_SKILL.md</code> v2';
+
+      var roles = d.charts.roles;
+      Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+      Chart.defaults.color = "#475467";
+
+      new Chart(document.getElementById("g1"), {
+        type: "bar",
+        data: {
+          labels: roles,
+          datasets: [
+            { label: "Completaron", data: d.charts.completaron, backgroundColor: "#10B132", stack: "s" },
+            { label: "Abandonaron", data: d.charts.abandonaron, backgroundColor: "#D92D20", stack: "s" },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: "bottom", labels: { boxWidth: 12, padding: 14 } } },
+          scales: {
+            x: { stacked: true, grid: { display: false } },
+            y: { stacked: true, beginAtZero: true, max: 5, ticks: { stepSize: 1 } },
+          },
+        },
+      });
+
+      var cols = d.charts.frictionColors || ["#D92D20", "#DC6803", "#10B132", "#7C3AED", "#2563EB"];
+      new Chart(document.getElementById("g2"), {
+        type: "bar",
+        data: {
+          labels: roles,
+          datasets: [
+            {
+              label: "Fricciones",
+              data: d.charts.fricciones,
+              backgroundColor: roles.map(function(_, i) { return cols[i % cols.length]; }),
+              borderColor: roles.map(function(_, i) { return cols[i % cols.length]; }),
+              borderWidth: 2,
+              borderRadius: 4,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } },
+        },
+      });
+
+      new Chart(document.getElementById("g3"), {
+        type: "doughnut",
+        data: {
+          labels: ["CRÍTICO", "ALTO", "MEDIO", "BAJO"],
+          datasets: [
+            {
+              data: [sc.CRITICO, sc.ALTO, sc.MEDIO, sc.BAJO],
+              backgroundColor: ["#D92D20", "#DC6803", "#98A2B3", "#10B132"],
+              borderWidth: 2,
+              borderColor: "#fff",
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: "58%",
+          plugins: { legend: { position: "right" } },
+        },
+      });
+
+      var scatterData = d.findings.map(function(f) {
+        return { x: f.effort, y: f.impact, qw: !!f.quickWin, l: f.title };
+      });
+
+      new Chart(document.getElementById("g4"), {
+        type: "scatter",
+        data: {
+          datasets: [
+            {
+              label: "Hallazgos",
+              data: scatterData.map(function(p) { return { x: p.x, y: p.y }; }),
+              backgroundColor: scatterData.map(function(p) { return p.qw ? "#10B132" : "#98A2B3"; }),
+              pointRadius: scatterData.map(function(p) { return p.qw ? 9 : 6; }),
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(ctx) {
+                  return scatterData[ctx.dataIndex] ? scatterData[ctx.dataIndex].l : "";
+                },
+              },
+            },
+          },
+          scales: {
+            x: { title: { display: true, text: "Esfuerzo (menor \u2192 izquierda)" }, min: 0.5, max: 3.5, grid: { color: "#EAECF0" } },
+            y: { title: { display: true, text: "Impacto (mayor \u2192 arriba)" }, min: 0.5, max: 5.5, grid: { color: "#EAECF0" } },
+          },
+        },
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>

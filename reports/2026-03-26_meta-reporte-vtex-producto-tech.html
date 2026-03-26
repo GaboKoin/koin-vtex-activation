@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meta-test — Reporte sintético VTEX · Perspectiva Producto + Tech</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --gray-25: #fcfcfd; --gray-50: #f9fafb; --gray-100: #f2f4f7; --gray-200: #eaecf0;
+      --gray-400: #98a2b3; --gray-500: #667085; --gray-600: #475467; --gray-700: #344054; --gray-900: #101828;
+      --brand: #10b132; --brand-dark: #067647; --brand-light: #ecfdf3;
+      --error: #d92d20; --error-bg: #fef3f2; --warning: #dc6803; --warning-bg: #fffaeb;
+      --crit: #b42318; --purple: #7c3aed; --purple-light: #f5f3ff;
+      --blue-fric: #2563eb;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; font-family: Inter, system-ui, sans-serif; background: var(--gray-50); color: var(--gray-900); line-height: 1.55; font-size: 14px; }
+    .cover {
+      background: linear-gradient(155deg, #0c111d 0%, #182230 45%, #0d5030 100%);
+      color: #fff; padding: 40px 28px 48px; position: relative; overflow: hidden;
+    }
+    .cover::before {
+      content: ""; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 50% at 100% 0%, rgba(16, 177, 50, 0.2), transparent 55%),
+        radial-gradient(ellipse 45% 40% at 0% 100%, rgba(255, 255, 255, 0.05), transparent 45%);
+      pointer-events: none;
+    }
+    .cover-inner { position: relative; max-width: 960px; margin: 0 auto; }
+    .cover-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .cover-logo {
+      width: 40px; height: 40px; border-radius: 8px; background: var(--brand);
+      display: flex; align-items: center; justify-content: center;
+      font-family: "DM Sans", sans-serif; font-weight: 700; font-size: 18px; color: #fff;
+    }
+    .cover-brand-txt { font-size: 13px; font-weight: 600; letter-spacing: 0.02em; color: rgba(255,255,255,0.9); }
+    .cover-title { font-family: "DM Sans", sans-serif; font-size: clamp(26px, 4vw, 36px); font-weight: 700; line-height: 1.15; margin: 0 0 14px; letter-spacing: -0.02em; }
+    .cover-keyq { font-size: 17px; font-weight: 500; color: #7dd3fc; margin: 0 0 24px; max-width: 42em; line-height: 1.45; }
+    .cover-pills { display: flex; flex-wrap: wrap; gap: 10px; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 14px; border-radius: 999px; background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12); font-size: 12px; color: rgba(255,255,255,0.88);
+    }
+    .pill strong { color: #fff; font-weight: 600; }
+    .doc-bar {
+      background: #fff; border-bottom: 1px solid var(--gray-200); padding: 10px 24px;
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px;
+      font-size: 11px; color: var(--gray-500);
+    }
+    .doc-bar strong { color: var(--gray-700); font-weight: 600; }
+    .doc-bar code { font-size: 10px; background: var(--gray-100); padding: 2px 8px; border-radius: 4px; color: var(--gray-700); }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 28px 24px 56px; }
+    .kpi-strip {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+      background: #fff; border: 1px solid var(--gray-200); border-radius: 14px; overflow: hidden;
+      margin-bottom: 24px; box-shadow: 0 4px 24px rgba(16, 24, 40, 0.06);
+    }
+    @media (max-width: 900px) { .kpi-strip { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 480px) { .kpi-strip { grid-template-columns: 1fr; } }
+    .kpi { padding: 20px 18px 18px; border-right: 1px solid var(--gray-200); position: relative; }
+    .kpi:last-child { border-right: none; }
+    .kpi-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; }
+    .kpi--green .kpi-bar { background: linear-gradient(90deg, var(--brand), #34d399); }
+    .kpi--red .kpi-bar { background: linear-gradient(90deg, #f04438, #fda29b); }
+    .kpi--amber .kpi-bar { background: linear-gradient(90deg, var(--warning), #fec84b); }
+    .kpi--purple .kpi-bar { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
+    .kpi .num { font-family: "DM Sans", sans-serif; font-size: 34px; font-weight: 700; letter-spacing: -0.03em; color: var(--gray-900); line-height: 1; }
+    .kpi .num small { font-size: 18px; font-weight: 600; color: var(--gray-400); }
+    .kpi .lbl { margin-top: 8px; font-size: 11px; font-weight: 500; color: var(--gray-500); line-height: 1.35; max-width: 12rem; }
+    .kpi .sub { margin-top: 4px; font-size: 10px; color: var(--gray-400); }
+    .keyq {
+      margin: 0 0 24px; padding: 16px 18px; background: var(--brand-light);
+      border-left: 4px solid var(--brand); border-radius: 0 10px 10px 0; font-size: 13px; color: var(--gray-700);
+    }
+    .keyq strong { color: var(--brand-dark); }
+    .section {
+      background: #fff; border: 1px solid var(--gray-200); border-radius: 12px; padding: 0; margin-bottom: 22px;
+      box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04);
+    }
+    .section-h { display: flex; align-items: flex-start; gap: 14px; padding: 20px 24px 0; border-left: 4px solid var(--brand); margin-left: 0; }
+    .section-num { font-family: "DM Sans", sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--brand); padding-top: 4px; }
+    .section h2 { margin: 0; font-family: "DM Sans", sans-serif; font-size: 17px; font-weight: 700; color: var(--gray-900); }
+    .section-body { padding: 14px 24px 22px; }
+    .section-note { font-size: 12px; color: var(--gray-500); margin: 0 0 14px; }
+    .exec-lead { font-size: 14px; color: var(--gray-600); margin: 0 0 14px; line-height: 1.6; }
+    .exec-bullets { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
+    .exec-bullets li { margin: 0; padding: 12px 14px; background: var(--gray-25); border-radius: 10px; border: 1px solid var(--gray-200); }
+    .exec-bullets strong { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gray-500); margin-bottom: 6px; }
+    .exec-bullets ul { margin: 0; padding-left: 18px; color: var(--gray-600); font-size: 13px; }
+    .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width: 860px) { .charts-grid { grid-template-columns: 1fr; } }
+    .figure { background: var(--gray-25); border: 1px solid var(--gray-200); border-radius: 12px; padding: 16px 16px 10px; }
+    .figure h3 { margin: 0 0 4px; font-size: 13px; font-weight: 600; color: var(--gray-900); }
+    .figure .sub { font-size: 11px; color: var(--gray-500); margin-bottom: 10px; }
+    .chart-wrap { position: relative; height: 260px; }
+    .chart-wrap.tall { height: 300px; }
+    .fig-cap { text-align: center; font-size: 10px; color: var(--gray-500); margin-top: 8px; font-style: italic; }
+    .finding-card-rich {
+      border: 1px solid var(--gray-200); border-radius: 12px; padding: 0; margin-bottom: 20px; overflow: hidden;
+      background: #fff; box-shadow: 0 2px 8px rgba(16,24,40,0.04);
+    }
+    .finding-card-head {
+      display: flex; align-items: flex-start; gap: 14px; padding: 18px 20px;
+      border-bottom: 1px solid var(--gray-100); flex-wrap: wrap;
+    }
+    .finding-badge-num {
+      width: 32px; height: 32px; border-radius: 50%; background: var(--gray-900); color: #fff;
+      display: flex; align-items: center; justify-content: center; font-family: "DM Sans", sans-serif; font-weight: 700; font-size: 14px; flex-shrink: 0;
+    }
+    .finding-titles-wrap { flex: 1; min-width: 200px; }
+    .finding-id {
+      display: block; font-family: ui-monospace, Consolas, monospace; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.04em; color: var(--gray-500); margin-bottom: 4px;
+    }
+    .finding-card-head h3 { margin: 0; font-size: 15px; font-weight: 700; }
+    .sev { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; padding: 5px 10px; border-radius: 999px; }
+    .sev.CRITICO { background: var(--error-bg); color: var(--crit); }
+    .sev.ALTO { background: var(--warning-bg); color: var(--warning); }
+    .sev.MEDIO { background: var(--gray-100); color: var(--gray-600); }
+    .sev.BAJO { background: var(--brand-light); color: var(--brand-dark); }
+    .meta-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; padding: 14px 20px;
+      background: var(--gray-50); font-size: 12px; border-bottom: 1px solid var(--gray-100);
+    }
+    @media (max-width: 560px) { .meta-grid { grid-template-columns: 1fr; } }
+    .meta-grid dt { font-weight: 600; color: var(--gray-500); margin: 0; font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .meta-grid dd { margin: 4px 0 0; color: var(--gray-700); }
+    .finding-body { padding: 16px 20px 20px; font-size: 13px; color: var(--gray-600); }
+    .finding-body h4 { margin: 16px 0 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gray-500); }
+    .finding-body h4:first-child { margin-top: 0; }
+    .quote-box {
+      margin: 10px 0; padding: 12px 14px; background: var(--brand-light); border-radius: 8px;
+      font-style: italic; color: var(--gray-700); border-left: 3px solid var(--brand);
+    }
+    .change-box { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--gray-200); }
+    .change-box strong { color: var(--brand-dark); }
+    .criteria-list { margin: 8px 0 0; padding-left: 18px; }
+    .draft-box { margin-top: 12px; padding: 12px 14px; background: var(--purple-light); border-radius: 8px; font-size: 12px; color: var(--gray-700); }
+    .role-card { border: 1px solid var(--gray-200); border-radius: 12px; overflow: hidden; margin-bottom: 14px; background: #fff; }
+    .role-card h3 { margin: 0; padding: 12px 16px; font-family: "DM Sans", sans-serif; font-size: 14px; font-weight: 700; background: linear-gradient(180deg, var(--gray-50) 0%, #fff 100%); border-bottom: 1px solid var(--gray-200); }
+    .block-fric { padding: 12px 16px; background: var(--error-bg); border-left: 4px solid var(--error); }
+    .block-fric h4 { margin: 0 0 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--error); }
+    .block-ok { padding: 12px 16px; background: var(--brand-light); border-left: 4px solid var(--brand); }
+    .block-ok h4 { margin: 0 0 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--brand-dark); }
+    .role-foot { padding: 10px 16px; background: var(--gray-50); border-top: 1px solid var(--gray-200); font-size: 12px; color: var(--gray-600); }
+    .table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--gray-200); }
+    table.metrics { width: 100%; border-collapse: collapse; font-size: 12px; }
+    table.metrics thead { background: var(--gray-900); color: #fff; }
+    table.metrics th { text-align: left; padding: 10px 12px; font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+    table.metrics td { padding: 9px 12px; border-bottom: 1px solid var(--gray-100); }
+    table.metrics tbody tr:nth-child(even) { background: var(--gray-50); }
+    .next-row { border: 1px solid var(--gray-200); border-radius: 10px; margin-bottom: 10px; background: #fff; overflow: hidden; }
+    .next-row summary {
+      display: flex; align-items: center; gap: 12px; padding: 12px 14px; cursor: pointer;
+      list-style: none; font-size: 13px; color: var(--gray-900);
+    }
+    .next-row summary::-webkit-details-marker { display: none; }
+    .next-row summary::after { content: "Ver m\00e1s"; margin-left: auto; font-size: 11px; font-weight: 600; color: var(--brand-dark); }
+    .next-row[open] summary::after { content: "Ver menos"; }
+    .next-num { width: 26px; height: 26px; border-radius: 50%; background: var(--gray-900); color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .next-title { flex: 1; font-weight: 500; }
+    .eff { font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+    .eff.bajo { background: var(--brand-light); color: var(--brand-dark); }
+    .eff.medio { background: var(--warning-bg); color: #b54708; }
+    .eff.alto { background: var(--error-bg); color: var(--crit); }
+    .next-detail { padding: 0 14px 16px; border-top: 1px solid var(--gray-100); background: var(--gray-25); }
+    footer { text-align: center; font-size: 11px; color: var(--gray-500); margin-top: 32px; padding: 18px; border-top: 1px solid var(--gray-200); }
+    @media print { body { background: #fff; } .cover { break-inside: avoid; } .kpi-strip, .section { break-inside: avoid; } .chart-wrap { height: 220px; } }
+  </style>
+</head>
+<body>
+  <section class="cover" aria-label="Portada">
+    <div class="cover-inner">
+      <div class="cover-brand">
+        <div class="cover-logo">K</div>
+        <span class="cover-brand-txt" id="cover-kicker">Koin — Testing sintético</span>
+      </div>
+      <h1 class="cover-title" id="cover-product-title">Título del producto</h1>
+      <p class="cover-keyq" id="cover-key-question"></p>
+      <div class="cover-pills" id="cover-pills"></div>
+    </div>
+  </section>
+  <div class="doc-bar" id="doc-bar"></div>
+  <div class="wrap">
+    <div class="kpi-strip" id="kpi-strip"></div>
+    <div class="keyq" id="keyq-box"></div>
+    <article class="section">
+      <div class="section-h"><span class="section-num">01</span><h2>Resumen ejecutivo</h2></div>
+      <div class="section-body" id="sec-summary"></div>
+    </article>
+    <article class="section">
+      <div class="section-h"><span class="section-num">02</span><h2>Análisis visual — cohorte sintética</h2></div>
+      <div class="section-body">
+        <p style="margin: 0 0 16px; font-size: 13px; color: var(--gray-600);" id="charts-intro"></p>
+        <div class="charts-grid">
+          <figure class="figure">
+            <h3>Completitud del flujo por rol</h3>
+            <p class="sub">Barras apiladas — completaron vs. abandonaron</p>
+            <div class="chart-wrap"><canvas id="g1"></canvas></div>
+            <figcaption class="fig-cap">Figura 1. Completitud por rol (n = 5 por cohorte).</figcaption>
+          </figure>
+          <figure class="figure">
+            <h3>Fricciones detectadas por rol</h3>
+            <p class="sub">Total de eventos de fricción simulados</p>
+            <div class="chart-wrap"><canvas id="g2"></canvas></div>
+            <figcaption class="fig-cap">Figura 2. Fricciones por rol.</figcaption>
+          </figure>
+          <figure class="figure">
+            <h3>Severidad de hallazgos</h3>
+            <p class="sub" id="g3-sub"></p>
+            <div class="chart-wrap tall"><canvas id="g3"></canvas></div>
+            <figcaption class="fig-cap">Figura 3. Distribución por nivel de impacto.</figcaption>
+          </figure>
+          <figure class="figure">
+            <h3>Matriz esfuerzo × impacto</h3>
+            <p class="sub">Verde = quick win sugerido · Cuadrante superior-izquierdo = bajo esfuerzo, alto impacto</p>
+            <div class="chart-wrap tall"><canvas id="g4"></canvas></div>
+            <figcaption class="fig-cap">Figura 4. Priorización de hallazgos.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </article>
+    <article class="section">
+      <div class="section-h"><span class="section-num">03</span><h2>Hallazgos priorizados</h2></div>
+      <div class="section-body">
+        <p class="section-note" id="top-findings-note"></p>
+        <div id="top-findings-root"></div>
+      </div>
+    </article>
+    <article class="section">
+      <div class="section-h"><span class="section-num">04</span><h2>Análisis por rol</h2></div>
+      <div class="section-body" id="role-cards-root"></div>
+    </article>
+    <article class="section">
+      <div class="section-h"><span class="section-num">05</span><h2>Matriz de cohorte sintética</h2></div>
+      <div class="section-body">
+        <div class="table-wrap">
+          <table class="metrics">
+            <thead><tr><th>ID</th><th>Rol</th><th>Var.</th><th>Resultado</th><th>Sección máx.</th><th>Fricciones</th></tr></thead>
+            <tbody id="cohorte-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </article>
+    <article class="section">
+      <div class="section-h"><span class="section-num">06</span><h2>Próximos pasos sugeridos</h2></div>
+      <div class="section-body">
+        <p class="section-note">Todos los hallazgos ordenados por prioridad de roadmap. Expandí <strong>Ver más</strong> para ver la ficha completa.</p>
+        <div id="next-steps-root"></div>
+      </div>
+    </article>
+    <footer id="footer"></footer>
+  </div>
+
+  <script type="application/json" id="report-data-json">
+{
+  "meta": {
+    "pageTitle": "Meta-test — Reporte sintético VTEX · Perspectiva Producto + Tech",
+    "ref": "SYN-2026-03-26-META-RPT",
+    "coverKicker": "Koin — Testing sintético",
+    "productTitle": "Reporte de testing sintético — Evaluación como entregable",
+    "keyQuestion": "Como persona de producto, ¿qué modificaría, sumaría o reorganizaría en el reporte de testing sintético del asistente VTEX?",
+    "dateLabel": "26 mar 2026",
+    "modeLabel": "Completo · 25 usuarios · 20 producto + 5 técnicos",
+    "productLabel": "Reporte HTML sintético (2026-03-26_asistente-vtex-autonomia-contactos.html)",
+    "url": "file:///C:/Users/.../reports/2026-03-26_asistente-vtex-autonomia-contactos.html",
+    "docClassification": "Interno — Producto · Meta-evaluación",
+    "cohortSize": 25,
+    "topLimit": 7,
+    "chartsIntro": "Cohorte de 25 usuarios sintéticos: 4 sub-perfiles de Producto (PM, UX Designer, Analyst, Lead — 5 cada uno) y 5 Técnicos. Se evaluó el reporte HTML como entregable de producto: ¿comunica bien? ¿permite tomar decisiones? ¿qué sobra, qué falta, qué reorganizar?"
+  },
+  "summary": {
+    "lead": "**El reporte tiene buena base visual y estructura clara, pero 3 problemas de arquitectura de información impiden que escale como herramienta de decisión.** (1) La respuesta a la pregunta clave está enterrada en un párrafo — falta un veredicto YES/NO prominente. (2) Las secciones §03 y §06 repiten los mismos hallazgos con formato casi idéntico, generando fatiga. (3) Los KPIs agregan toda la cohorte sin mostrar el insight más revelador: la tasa de completitud por rol. De 25 evaluadores, 23 completaron la lectura (92%), pero los 2 que abandonaron eran Product Leads — el público ejecutivo que más necesita consumir este reporte.",
+    "bullets": [
+      {
+        "title": "Qué funciona bien del reporte",
+        "items": [
+          "La portada con pregunta clave en color cyan genera foco inmediato sobre el objetivo del estudio",
+          "La franja KPI con barras de color es visualmente impactante y escaneable",
+          "Las fichas de hallazgos son completas: tienen cita, cambio sugerido, criterios de aceptación y contenido borrador",
+          "Las role cards (§04) son el formato ideal para compartir feedback accionable por equipo",
+          "La matriz esfuerzo × impacto (gráfica 4) es la herramienta más útil para priorizar",
+          "El HTML self-contained es práctico: se abre en cualquier navegador sin dependencias locales"
+        ]
+      },
+      {
+        "title": "Qué modificar — reorganizar",
+        "items": [
+          "Agregar un bloque de VEREDICTO (SI/NO + 1 línea) entre la franja KPI y el resumen ejecutivo",
+          "Fusionar §03 y §06 en una sola sección con vista colapsable — elimina la redundancia",
+          "Subir la gráfica de completitud por rol (g1) a la franja KPI o crear un quinto KPI con el rango min-max (20%–100%)",
+          "Comprimir §01 a 3 líneas de lead + bullets cortos — el lead actual tiene 4 oraciones largas",
+          "Agregar agrupación visual en la tabla de cohorte (§05): separadores por rol + color de fondo por resultado"
+        ]
+      },
+      {
+        "title": "Qué sumar",
+        "items": [
+          "Sección §00 de metodología: cómo se generaron los 25 usuarios, qué supuestos, qué limitaciones",
+          "Vista 'Sprint Plan' que agrupe hallazgos en iteraciones de 2 semanas por esfuerzo acumulado",
+          "KPI de rango de completitud por rol (min 20% — max 100%) como indicador de equidad de acceso",
+          "Sección de 'Riesgo de no actuar': qué pasa con tickets de soporte y time-to-activate si no se implementan los cambios",
+          "Bloque de quick wins separado y destacado visualmente — los 6 quick wins perdidos entre 12 hallazgos"
+        ]
+      }
+    ]
+  },
+  "charts": {
+    "roles": ["PM de Producto", "UX Designer", "Product Analyst", "Product Lead", "Técnico"],
+    "completaron": [5, 5, 5, 3, 5],
+    "abandonaron": [0, 0, 0, 2, 0],
+    "fricciones": [12, 12, 11, 14, 6],
+    "frictionColors": ["#7C3AED", "#2563EB", "#DC6803", "#D92D20", "#10B132"]
+  },
+  "findings": [
+    {
+      "id": "R-01",
+      "title": "Falta un veredicto YES/NO prominente para la pregunta clave",
+      "severity": "CRITICO",
+      "rolesAffected": ["PM de Producto", "Product Lead", "Product Analyst"],
+      "frequency": { "affected": 18, "denominator": 20, "label": "perfiles de producto buscaron una respuesta directa" },
+      "description": "La pregunta clave del reporte es '¿El asistente permite que cualquier tipo de contacto complete la activación sin soporte externo?'. La respuesta (No) está enterrada en la primera oración del resumen ejecutivo, dentro de un párrafo largo. Los Product Leads escanean el documento en 15 segundos buscando un veredicto binario. Al no encontrarlo, dos de ellos abandonaron y pidieron 'que me manden un resumen por Slack'.",
+      "quote": "PL-A abrió el reporte, miró los KPIs (16/25), bajó al resumen, leyó 3 líneas y dijo: 'No me queda claro si esto es un sí o un no. ¿Puedo abrir algo en producción con esto o no?'. Cerró el tab.",
+      "suggestedChange": "Agregar un bloque visual entre la franja KPI y §01 con fondo rojo/verde según el veredicto. Formato: icono + texto bold de 1 línea ('NO — solo el 20% de los contactos comerciales puede completar sin soporte') + subtítulo con el desglose por rol.",
+      "businessImpact": "Sin veredicto claro, el reporte no cumple su función primaria: informar una decisión. El Product Lead delega la interpretación, lo cual demora el roadmap y diluye la urgencia.",
+      "acceptanceCriteria": [
+        "Existe un bloque visual tipo callout entre KPI strip y §01 con fondo condicionado al resultado",
+        "El veredicto es de máximo 1 oración con la respuesta directa a la pregunta clave",
+        "Debajo del veredicto hay un desglose de 1 línea por rol (ej. 'Comercial 20% · PM 60% · Ops 60% · UX 80% · Tech 100%')"
+      ],
+      "contentDraft": "VEREDICTO: NO — Solo el 64% de la cohorte completó sin soporte externo. El rango va de 20% (Comercial) a 100% (Técnico). Los contactos no técnicos necesitan intervención humana o delegación para activar.",
+      "effort": 1,
+      "impact": 5,
+      "quickWin": true
+    },
+    {
+      "id": "R-02",
+      "title": "§03 y §06 repiten los mismos hallazgos — redundancia estructural",
+      "severity": "ALTO",
+      "rolesAffected": ["PM de Producto", "UX Designer", "Product Lead"],
+      "frequency": { "affected": 16, "denominator": 25, "label": "usuarios notaron la repetición" },
+      "description": "§03 (Hallazgos priorizados) muestra los top 7 hallazgos con ficha completa. §06 (Próximos pasos) muestra los MISMOS 12 hallazgos con la MISMA ficha dentro de un <details>. El usuario que leyó §03 se encuentra la misma información en §06 con diferente orden. Esto genera fatiga de lectura y la percepción de que el reporte tiene 'relleno'.",
+      "quote": "UXD-C llegó a §06, expandió el primer 'Ver más' y dijo: 'Esto ya lo leí arriba. ¿Por qué está dos veces?'. PM-B dijo: 'Si lo leo en §03, ¿para qué abro §06? O si empiezo por §06, ¿para qué existe §03?'.",
+      "suggestedChange": "Fusionar en una sola sección con dos vistas: (1) Vista resumen (lista colapsada con título + badge severidad + badge esfuerzo), (2) cada ítem se expande a la ficha completa. Eliminar §03 como sección separada; §06 se convierte en la sección única de hallazgos con dos controles: 'Top 7' (filtro) y 'Todos' (default).",
+      "businessImpact": "La redundancia duplica el scroll necesario sin agregar información. Un reporte largo que repite contenido pierde credibilidad y engagement.",
+      "acceptanceCriteria": [
+        "Los hallazgos aparecen en UNA sola sección del reporte",
+        "Existe un toggle o filtro para ver 'Top por matriz' vs 'Todos ordenados por roadmap'",
+        "La ficha completa aparece una sola vez por hallazgo (dentro del expandible)"
+      ],
+      "effort": 2,
+      "impact": 4,
+      "quickWin": false
+    },
+    {
+      "id": "R-03",
+      "title": "La franja KPI no muestra el breakdown por rol — oculta el insight principal",
+      "severity": "ALTO",
+      "rolesAffected": ["PM de Producto", "Product Analyst", "Product Lead"],
+      "frequency": { "affected": 15, "denominator": 25, "label": "usuarios buscaron el desglose por rol en la zona de KPIs" },
+      "description": "Los 4 KPIs muestran: 16/25 completaron, 9/25 abandonaron, 40 fricciones, 12 hallazgos. Pero el insight más revelador del estudio (Comercial 20% vs Técnico 100%) NO está en los KPIs — está enterrado en el texto del resumen ejecutivo. El usuario tiene que leer un párrafo largo para descubrir que el 64% global esconde una disparidad enorme.",
+      "quote": "PA-D dijo: 'Vi 16/25 y pensé que estaba bastante bien, 64%. Cuando leí que los comerciales solo completan 1 de 5, cambié de opinión. Pero si solo miraba los KPIs me iba con una impresión equivocada'.",
+      "suggestedChange": "Agregar un quinto KPI (o reemplazar 'Fricciones') que muestre el rango de completitud por rol: '20%–100%' con un subtítulo 'Rango por rol (min Comercial — max Técnico)'. Alternativamente, agregar una mini-tabla debajo de la franja KPI con 1 fila por rol y su tasa.",
+      "businessImpact": "Si el stakeholder solo mira los KPIs (comportamiento habitual de ejecutivos), se lleva una conclusión optimista (64%) que no refleja el problema real (20% en el rol más frecuente).",
+      "acceptanceCriteria": [
+        "La franja KPI incluye un indicador que muestre la disparidad entre roles",
+        "El indicador es visible sin scroll ni lectura de texto largo",
+        "El rango min-max está presente con etiquetas de qué rol es cada extremo"
+      ],
+      "effort": 1.5,
+      "impact": 4,
+      "quickWin": true
+    },
+    {
+      "id": "R-04",
+      "title": "El resumen ejecutivo (§01) es demasiado largo para consumo ejecutivo",
+      "severity": "ALTO",
+      "rolesAffected": ["Product Lead", "PM de Producto"],
+      "frequency": { "affected": 8, "denominator": 10, "label": "PMs y Leads encontraron §01 excesivo" },
+      "description": "El lead del resumen tiene 4 oraciones largas. Debajo hay 3 grupos de bullets con 3-5 ítems cada uno. Total: ~25 líneas de texto denso. Los Product Leads necesitan captar el mensaje en 5 segundos. Los PMs valoran la estructura pero la extensión hace que pierda fuerza el insight clave.",
+      "quote": "PL-D leyó el lead, empezó a escanear los bullets, dijo: 'Esto es bueno pero necesito una versión de 3 líneas para el standup'. PL-A directamente no terminó de leer §01.",
+      "suggestedChange": "Reestructurar §01 en dos niveles: (1) TL;DR de máximo 3 líneas (veredicto + dato clave + implicancia), (2) bullets expandibles debajo para quien quiera profundizar. El TL;DR debe ser legible sin abrir nada.",
+      "businessImpact": "El resumen ejecutivo es la sección más leída de cualquier reporte. Si es demasiado largo, el lector se saltea a las gráficas y pierde el contexto narrativo.",
+      "acceptanceCriteria": [
+        "§01 tiene un TL;DR de máximo 3 líneas visible sin scroll desde el inicio de la sección",
+        "Los bullets detallados están debajo en formato colapsable o con separación visual clara",
+        "El TL;DR responde: ¿funciona? ¿para quién no? ¿qué priorizar?"
+      ],
+      "effort": 1,
+      "impact": 4,
+      "quickWin": true
+    },
+    {
+      "id": "R-05",
+      "title": "Falta sección de metodología — credibilidad del estudio cuestionada",
+      "severity": "ALTO",
+      "rolesAffected": ["Product Analyst", "Técnico", "PM de Producto"],
+      "frequency": { "affected": 12, "denominator": 25, "label": "usuarios preguntaron cómo se generaron los datos" },
+      "description": "El reporte no explica: cómo se crearon los 25 usuarios sintéticos, qué modelo de comportamiento se usó, qué supuestos se tomaron para definir abandono vs completitud, ni qué limitaciones tiene el enfoque. Los Product Analysts cuestionan la validez; los técnicos quieren reproducibilidad.",
+      "quote": "PA-C dijo: 'Estos datos son simulados, ¿verdad? ¿Con qué criterio se decidió que COM-A abandona en prereqs y COM-C completa? Necesito entender la lógica para confiar en las conclusiones'. DEV-C dijo: 'Si quiero correr esto de nuevo con parámetros diferentes, ¿cómo lo hago?'.",
+      "suggestedChange": "Agregar una sección §00 (Metodología) antes del resumen ejecutivo, con: (1) Descripción del enfoque de testing sintético, (2) Tabla de variaciones (experiencia × tamaño × urgencia), (3) Criterios de abandono/completitud, (4) Limitaciones explícitas, (5) Referencia al skill que generó el test.",
+      "businessImpact": "Sin metodología, el reporte es una opinión estructurada, no un estudio. Los stakeholders escépticos descartarán las conclusiones por falta de transparencia sobre el proceso.",
+      "acceptanceCriteria": [
+        "Existe una sección §00 Metodología antes de §01",
+        "Incluye la tabla de variaciones (5 columnas: usuario, experiencia, tamaño, urgencia, lógica de resultado)",
+        "Incluye párrafo de limitaciones y disclaimer de testing sintético vs testing real",
+        "Referencia la versión del skill usado (SYNTHETIC_USERS_SKILL.md)"
+      ],
+      "effort": 1.5,
+      "impact": 4,
+      "quickWin": false
+    },
+    {
+      "id": "R-06",
+      "title": "Quick wins no están diferenciados visualmente — se pierden entre hallazgos de alto esfuerzo",
+      "severity": "MEDIO",
+      "rolesAffected": ["PM de Producto", "UX Designer", "Product Lead"],
+      "frequency": { "affected": 14, "denominator": 20, "label": "perfiles de producto buscaron los quick wins como grupo" },
+      "description": "De los 12 hallazgos, 6 son quick wins (quickWin: true en el JSON). Pero en §03 y §06 aparecen mezclados con los de alto esfuerzo sin ninguna diferenciación visual. El único lugar donde se distinguen es en la gráfica 4 (scatter), pero ahí no se pueden leer los títulos. Los PMs quieren una lista rápida de 'qué puedo hacer esta semana'.",
+      "quote": "PM-D dijo: 'Sé que hay quick wins porque lo dice la gráfica, pero no puedo listarlos sin leer las 12 fichas una por una'.",
+      "suggestedChange": "Agregar un bloque visual 'Quick Wins' justo después de §01, antes de las gráficas. Lista compacta: título + severidad + 1 línea de cambio sugerido. Sin ficha completa (esa va en la sección principal).",
+      "businessImpact": "Los quick wins son la acción inmediata más valiosa de un test sintético. Si están diluidos, el equipo no prioriza las victorias rápidas y empieza por lo complejo.",
+      "acceptanceCriteria": [
+        "Existe un bloque dedicado de Quick Wins visible antes de las gráficas",
+        "Cada quick win muestra: título, severidad y cambio sugerido en 1 línea",
+        "El bloque tiene un badge con el conteo (ej. '6 Quick Wins')"
+      ],
+      "effort": 1.5,
+      "impact": 3,
+      "quickWin": true
+    },
+    {
+      "id": "R-07",
+      "title": "Tabla de cohorte (§05) es una pared de datos sin agrupación visual",
+      "severity": "MEDIO",
+      "rolesAffected": ["UX Designer", "Product Analyst", "PM de Producto"],
+      "frequency": { "affected": 13, "denominator": 25, "label": "usuarios encontraron la tabla difícil de escanear" },
+      "description": "La tabla tiene 25 filas con 6 columnas, sin separadores por rol ni color por resultado. Para encontrar cuántos comerciales abandonaron, hay que contar manualmente las filas COM-* con 'Abandonó'. No hay subtotales ni resumen visual.",
+      "quote": "UXD-B dijo: 'La tabla tiene los datos pero no cuenta la historia. Necesito un separador entre roles y un color de fondo para Completó (verde) vs Abandonó (rojo)'. PA-A dijo: 'Sin subtotales por rol esta tabla es un CSV con formato'.",
+      "suggestedChange": "Agregar: (1) separadores visuales entre grupos de rol (línea gruesa o fondo de sección), (2) color de fondo en la columna Resultado (verde claro para Completó, rojo claro para Abandonó), (3) fila de subtotal por rol con la tasa X/5.",
+      "businessImpact": "La tabla es la evidencia que respalda las conclusiones. Si no es legible, el lector no puede verificar los datos y pierde confianza.",
+      "acceptanceCriteria": [
+        "La tabla tiene separadores visuales entre grupos de rol",
+        "La columna 'Resultado' usa fondo verde (Completó) o rojo (Abandonó)",
+        "Cada grupo de rol tiene una fila de subtotal: 'Comercial: 1/5 completaron'"
+      ],
+      "effort": 1.5,
+      "impact": 3,
+      "quickWin": true
+    },
+    {
+      "id": "R-08",
+      "title": "Falta una vista de 'Sprint Plan' para planificar la implementación",
+      "severity": "ALTO",
+      "rolesAffected": ["PM de Producto", "Product Lead"],
+      "frequency": { "affected": 9, "denominator": 10, "label": "PMs y Leads buscaron una agrupación por sprint" },
+      "description": "Los hallazgos tienen esfuerzo (1-3) e impacto (1-5), pero no hay una vista que los agrupe en iteraciones de trabajo. Los PMs salen del reporte y tienen que armar el sprint plan en otro lado. §06 ordena por prioridad pero no agrupa por capacidad de sprint.",
+      "quote": "PM-A dijo: 'Tengo 12 hallazgos priorizados, genial. Ahora necesito saber cuáles entran en el sprint 1 (2 semanas) y cuáles en el sprint 2. ¿Me lo dice el reporte? No'.",
+      "suggestedChange": "Agregar una vista alternativa en §06 que agrupe hallazgos en sprints sugeridos basados en esfuerzo acumulado. Ej: Sprint 1 (quick wins, effort sum ≤ 6), Sprint 2 (effort sum 6-12), Sprint 3 (el resto). Cada sprint con su estimado de impacto total.",
+      "businessImpact": "Sin sprint plan, el reporte informa pero no habilita acción directa. El PM tiene que hacer el trabajo de traducción a roadmap, lo que demora la implementación.",
+      "acceptanceCriteria": [
+        "§06 tiene un toggle para ver 'Por prioridad' vs 'Por sprint sugerido'",
+        "Los sprints están definidos por esfuerzo acumulado con un límite configurable",
+        "Cada sprint muestra: hallazgos incluidos, effort total, impact total esperado"
+      ],
+      "effort": 2.5,
+      "impact": 4,
+      "quickWin": false
+    },
+    {
+      "id": "R-09",
+      "title": "Las role cards (§04) no enlazan a los IDs de hallazgos que mencionan",
+      "severity": "BAJO",
+      "rolesAffected": ["UX Designer", "PM de Producto"],
+      "frequency": { "affected": 8, "denominator": 25, "label": "usuarios quisieron ir de la fricción al hallazgo correspondiente" },
+      "description": "Las role cards mencionan fricciones como texto libre (ej. 'La terminología de GTM genera confusión inmediata') pero no referencian el ID del hallazgo relacionado (F-05). El usuario tiene que buscar manualmente en §03/§06 cuál corresponde.",
+      "quote": "UXD-D leyó la fricción de la card de Comercial y dijo: 'Esto suena al hallazgo F-05 pero no me lo dice. Si quiero ver la ficha completa, tengo que ir a buscarla'.",
+      "suggestedChange": "Agregar el ID del hallazgo como badge inline en cada punto de fricción que tenga hallazgo asociado. Hacerlo clickeable (anchor) para saltar a la ficha del hallazgo.",
+      "businessImpact": "Sin enlaces cruzados, las role cards y los hallazgos son dos mundos separados. El usuario hace el trabajo de correlación mentalmente.",
+      "acceptanceCriteria": [
+        "Cada fricción en las role cards incluye el ID del hallazgo relacionado (si existe)",
+        "El ID es un anchor link que lleva al hallazgo en la sección de hallazgos",
+        "El badge del ID usa el mismo estilo que las fichas de hallazgo"
+      ],
+      "effort": 1,
+      "impact": 2,
+      "quickWin": true
+    },
+    {
+      "id": "R-10",
+      "title": "Scatter chart (g4) tiene puntos superpuestos — pierde información",
+      "severity": "MEDIO",
+      "rolesAffected": ["UX Designer", "Product Analyst"],
+      "frequency": { "affected": 7, "denominator": 10, "label": "UX y Analysts notaron superposición" },
+      "description": "Cuando dos hallazgos comparten el mismo valor de esfuerzo e impacto (ej. effort=1, impact=3 para F-06 y F-09), los puntos se superponen en el scatter. Solo se ve uno. El tooltip muestra el de arriba pero no el de abajo. En el reporte actual hay 3 pares de puntos superpuestos.",
+      "quote": "PA-B dijo: 'Veo 9 puntos en el scatter pero hay 12 hallazgos. ¿Dónde están los otros 3?'. UXD-A intentó pasar el mouse por todos los puntos y no logró ver todos los tooltips.",
+      "suggestedChange": "Aplicar jitter (desplazamiento aleatorio pequeño ±0.1) a los puntos con coordenadas duplicadas para que sean visibles. Alternativamente, usar un bubble chart donde el tamaño refleje la cantidad de hallazgos en esa coordenada.",
+      "businessImpact": "La gráfica 4 es la herramienta de priorización principal. Si oculta hallazgos, el stakeholder toma decisiones con información incompleta.",
+      "acceptanceCriteria": [
+        "Todos los hallazgos son visibles como puntos separados en el scatter",
+        "Los tooltips funcionan para todos los puntos sin superposición",
+        "Los puntos desplazados mantienen proximidad visual al valor real"
+      ],
+      "effort": 1.5,
+      "impact": 3,
+      "quickWin": false
+    },
+    {
+      "id": "R-11",
+      "title": "Falta sección de 'Riesgo de no actuar' con cuantificación de impacto",
+      "severity": "MEDIO",
+      "rolesAffected": ["Product Lead", "PM de Producto", "Product Analyst"],
+      "frequency": { "affected": 10, "denominator": 15, "label": "Leads, PMs y Analysts buscaron proyección de riesgo" },
+      "description": "El reporte dice 'qué está mal' y 'qué cambiar', pero no proyecta 'qué pasa si NO cambio nada'. Los Product Leads necesitan esta información para justificar la inversión de recursos. Sin cuantificación de riesgo, el reporte compite con otras prioridades sin argumentos de costo de inacción.",
+      "quote": "PL-C dijo: 'Si el 36% de los usuarios van a generar ticket de soporte, ¿cuántos tickets es eso al mes? ¿Cuánto cuesta cada ticket? Sin esos números no puedo priorizar esto sobre otras iniciativas'.",
+      "suggestedChange": "Agregar una sección corta (3-5 líneas + tabla) entre §01 y §02 que proyecte: (1) tickets de soporte esperados si no se actúa, (2) tiempo promedio de activación actual vs ideal, (3) costo de oportunidad por merchants que no completan.",
+      "businessImpact": "El costo de inacción es el argumento más poderoso para priorizar cambios. Sin él, el reporte queda como 'sería bueno' en vez de 'hay que hacerlo'.",
+      "acceptanceCriteria": [
+        "Existe una sección 'Riesgo de no actuar' con al menos 3 métricas proyectadas",
+        "Las métricas usan datos del reporte (tasa de abandono por rol) como base de cálculo",
+        "La proyección asume un volumen de merchants configurable (meta.monthlyMerchants)"
+      ],
+      "effort": 2,
+      "impact": 3,
+      "quickWin": false
+    },
+    {
+      "id": "R-12",
+      "title": "Falta estimado de esfuerzo total para dimensionar el backlog",
+      "severity": "MEDIO",
+      "rolesAffected": ["PM de Producto", "Product Lead"],
+      "frequency": { "affected": 8, "denominator": 10, "label": "PMs y Leads quisieron saber cuánto trabajo total representa" },
+      "description": "Cada hallazgo tiene un esfuerzo (1-3) pero no hay un total agregado ni una estimación de semanas/sprints necesarios para implementar todo. El PM tiene que sumar manualmente los efforts y mapearlos a capacity.",
+      "quote": "PM-E dijo: 'Tengo 12 hallazgos con esfuerzos entre 1 y 3. ¿Eso es un sprint o un trimestre? No tengo la escala para interpretar el número de esfuerzo'.",
+      "suggestedChange": "Agregar en la franja KPI o debajo de ella: 'Esfuerzo total estimado: X puntos (~Y sprints)' con una leyenda que explique la escala (1 punto ≈ 2-3 días dev, 2 ≈ 1 semana, 3 ≈ 2 semanas).",
+      "businessImpact": "Sin estimado total, el reporte no permite planificar recursos. El PM necesita hacer trabajo adicional de sizing que podría estar en el reporte.",
+      "acceptanceCriteria": [
+        "Existe un KPI o callout con el esfuerzo total sumado",
+        "Incluye una leyenda que traduce puntos de esfuerzo a tiempo estimado",
+        "Muestra el esfuerzo desglosado: quick wins vs resto"
+      ],
+      "effort": 1,
+      "impact": 3,
+      "quickWin": true
+    },
+    {
+      "id": "R-13",
+      "title": "La dependencia de Chart.js por CDN impide uso offline y en presentaciones",
+      "severity": "BAJO",
+      "rolesAffected": ["Técnico", "Product Lead"],
+      "frequency": { "affected": 4, "denominator": 25, "label": "usuarios intentaron abrir offline o imprimir" },
+      "description": "El reporte carga Chart.js desde cdn.jsdelivr.net. Si se abre sin internet (ej. desde un email adjunto) o se imprime a PDF, las 4 gráficas no se renderizan. Los Product Leads a veces adjuntan el HTML a un email o lo abren en contextos sin red.",
+      "quote": "DEV-C abrió el HTML en modo avión y las gráficas no aparecieron: 'Si voy a presentar esto en una sala sin WiFi, estoy en problemas'. PL-B quiso adjuntarlo a un email y notó que sin red las gráficas no cargan.",
+      "suggestedChange": "Embeber Chart.js como script inline en el HTML (bundle local) en vez de cargarlo por CDN. El HTML crece ~60KB pero se vuelve 100% self-contained.",
+      "businessImpact": "Un reporte que no funciona offline pierde la ventaja de ser 'un solo archivo portable'. Impacto bajo pero afecta la credibilidad del formato.",
+      "acceptanceCriteria": [
+        "El HTML no tiene dependencias externas (CDN) — todo está embebido",
+        "Las 4 gráficas se renderizan correctamente sin conexión a internet",
+        "El tamaño del archivo se mantiene por debajo de 300KB"
+      ],
+      "effort": 1.5,
+      "impact": 2,
+      "quickWin": false
+    },
+    {
+      "id": "R-14",
+      "title": "Falta contexto de benchmark — ¿64% de completitud es bueno o malo?",
+      "severity": "MEDIO",
+      "rolesAffected": ["Product Analyst", "Product Lead", "PM de Producto"],
+      "frequency": { "affected": 11, "denominator": 25, "label": "usuarios preguntaron si la tasa era aceptable" },
+      "description": "El reporte dice que 16/25 completaron (64%). Pero no hay referencia de comparación: ¿los flujos de onboarding de la industria tienen 50%? ¿80%? ¿Stripe tiene un benchmark público? Sin contexto, el 64% es un número flotante que cada persona interpreta diferente.",
+      "quote": "PA-D dijo: '64% suena bajo pero no sé contra qué comparar. ¿Es peor que Shopify? ¿Mejor que el promedio de SaaS B2B?'. PL-C dijo: 'Si me dicen que lo normal es 40%, estoy bien. Si lo normal es 90%, estoy en crisis'.",
+      "suggestedChange": "Agregar un callout en §01 o §02 con benchmarks de referencia: (1) tasa de completitud promedio de onboarding SaaS B2B (fuente: industria), (2) meta interna de Koin (si existe), (3) resultado del último test (si es iteración). Si no hay datos exactos, usar rangos publicados.",
+      "businessImpact": "Sin benchmark, la urgencia es subjetiva. Con benchmark, la decisión se basa en datos comparativos y el PM puede argumentar con contexto.",
+      "acceptanceCriteria": [
+        "Existe un callout o nota con al menos 1 benchmark de referencia",
+        "El benchmark indica la fuente (ej. 'Promedio SaaS B2B según Userpilot 2025: 63%')",
+        "Si es un test iterado, muestra la comparación con la iteración anterior"
+      ],
+      "effort": 1.5,
+      "impact": 3,
+      "quickWin": false
+    },
+    {
+      "id": "R-15",
+      "title": "La portada no indica el estado del documento (draft, final, aprobado)",
+      "severity": "BAJO",
+      "rolesAffected": ["PM de Producto", "Product Lead"],
+      "frequency": { "affected": 5, "denominator": 10, "label": "PMs y Leads quisieron saber si el reporte era definitivo" },
+      "description": "Las pills de la portada muestran Fecha, Modo, Producto y URL, pero no indican si el documento es un draft, una versión final o si fue aprobado/revisado. Esto importa cuando el reporte se comparte entre equipos y alguien puede actuar sobre un draft que aún cambiará.",
+      "quote": "PL-B preguntó: '¿Esto ya es final o va a cambiar? Si lo paso a engineering y después cambian los hallazgos, me van a matar'.",
+      "suggestedChange": "Agregar una pill 'Estado' a la portada con valores: DRAFT / REVIEW / FINAL. Incluir en meta un campo 'status' que controle el valor y el color de la pill (amarillo para draft, azul para review, verde para final).",
+      "businessImpact": "Un documento sin estado genera ambigüedad sobre si se puede compartir y actuar. Impacto bajo pero refleja madurez del proceso.",
+      "acceptanceCriteria": [
+        "La portada incluye una pill 'Estado' con color condicionado",
+        "meta.status acepta: 'DRAFT', 'REVIEW', 'FINAL'",
+        "El color de la pill cambia según el estado"
+      ],
+      "effort": 0.5,
+      "impact": 1,
+      "quickWin": true
+    }
+  ],
+  "roleCards": [
+    {
+      "title": "PM de Producto (5 usuarios)",
+      "fricciones": [
+        "§03 y §06 repiten los mismos hallazgos — 'sentí que el reporte tiene relleno' (R-02)",
+        "Los KPIs no muestran la disparidad por rol — 64% global oculta que Comercial es 20% (R-03)",
+        "Los quick wins están diluidos entre 12 hallazgos sin bloque dedicado (R-06)",
+        "Falta una vista de sprint plan para llevar los hallazgos al roadmap directamente (R-08)",
+        "Sin esfuerzo total agregado, no pueden dimensionar cuánto trabajo implica implementar todo (R-12)"
+      ],
+      "ok": [
+        "Las fichas de hallazgos con criterios de aceptación son directamente convertibles a tickets",
+        "La matriz esfuerzo × impacto (gráfica 4) facilita la priorización en planning",
+        "El formato HTML self-contained es práctico para compartir sin herramientas adicionales",
+        "Las role cards (§04) permiten compartir feedback específico por equipo"
+      ],
+      "priority": "Agregar veredicto YES/NO, fusionar §03/§06, crear vista sprint plan, bloque de quick wins destacado."
+    },
+    {
+      "title": "UX Designer (5 usuarios)",
+      "fricciones": [
+        "La tabla de cohorte (§05) es una pared de datos sin agrupación por rol ni color por resultado (R-07)",
+        "Los puntos superpuestos en el scatter chart pierden información visual (R-10)",
+        "La redundancia §03/§06 genera fatiga de scroll (R-02)",
+        "Las role cards no enlazan a los IDs de hallazgos que mencionan (R-09)",
+        "Las gráficas no tienen estados interactivos (hover, click para filtrar)"
+      ],
+      "ok": [
+        "La portada con pregunta clave en cyan es visualmente efectiva y centra la atención",
+        "La franja KPI con barras de color inferiores es un patrón de diseño sólido",
+        "La tipografía Inter + DM Sans es legible y profesional",
+        "Las finding cards están bien diseñadas: jerarquía clara entre ID, título, severidad y contenido",
+        "El responsive funciona correctamente en anchos de pantalla comunes"
+      ],
+      "priority": "Mejorar tabla de cohorte con agrupación visual, resolver superposición en scatter, agregar enlaces cruzados entre role cards y hallazgos."
+    },
+    {
+      "title": "Product Analyst (5 usuarios)",
+      "fricciones": [
+        "No hay sección de metodología que explique cómo se simularon los 25 usuarios (R-05)",
+        "Falta benchmark de referencia para contextualizar el 64% de completitud (R-14)",
+        "La tabla de cohorte no tiene subtotales por rol para verificación rápida (R-07)",
+        "El scatter chart pierde puntos por superposición (R-10)",
+        "No hay intervalo de confianza ni disclaimer sobre las limitaciones del testing sintético"
+      ],
+      "ok": [
+        "Los datos son internamente coherentes (verificado con verifySyntheticReport_v2.mjs)",
+        "Las frecuencias en los hallazgos (X/N + label) son precisas y verificables",
+        "El donut de severidad coincide con el conteo de findings",
+        "Las variaciones de cohorte (experiencia × tamaño × urgencia) cubren un espectro razonable",
+        "El REPORT_DATA JSON está bien estructurado y facilita análisis programático"
+      ],
+      "priority": "Agregar sección de metodología con supuestos y limitaciones. Incluir benchmarks de industria y estimados de confianza."
+    },
+    {
+      "title": "Product Lead / Head of Product (5 usuarios — 2 abandonaron)",
+      "fricciones": [
+        "La respuesta a la pregunta clave no es visible en 5 segundos — falta veredicto YES/NO (R-01)",
+        "El resumen ejecutivo tiene demasiadas líneas para consumo en standup o deck (R-04)",
+        "Falta cuantificación de 'riesgo de no actuar' para justificar prioridad sobre otras iniciativas (R-11)",
+        "No hay estado del documento (draft/final) para saber si se puede compartir con confianza (R-15)",
+        "2 de 5 abandonaron la lectura — el reporte no está optimizado para el público ejecutivo"
+      ],
+      "ok": [
+        "La pregunta clave como subtítulo en la portada establece el contexto inmediatamente",
+        "La estructura de secciones numeradas (§01-§06) da sensación de rigor y proceso",
+        "El formato HTML se puede abrir en el navegador del teléfono sin instalar nada"
+      ],
+      "priority": "Agregar veredicto prominente, comprimir §01, agregar sección de riesgo de no actuar. Considerar una 'vista ejecutiva' colapsada de 1 pantalla."
+    },
+    {
+      "title": "Técnico / Desarrollador (5 usuarios)",
+      "fricciones": [
+        "La dependencia de Chart.js por CDN rompe el uso offline (R-13)",
+        "No hay forma de exportar REPORT_DATA como JSON o CSV para análisis externo",
+        "Los hallazgos no tienen un campo 'category' para agrupación programática",
+        "El HTML pesa ~50KB pero con Chart.js embebido llegaría a ~110KB (aceptable)"
+      ],
+      "ok": [
+        "El REPORT_DATA JSON embebido en <script type='application/json'> es un patrón limpio y parseable",
+        "El verificador (verifySyntheticReport_v2.mjs) asegura coherencia de datos post-generación",
+        "El render en JS vanilla sin framework facilita mantenimiento y portabilidad",
+        "El CSS usa custom properties y es fácil de themar",
+        "La plantilla v2 es reutilizable: cambiar solo REPORT_DATA genera un nuevo reporte"
+      ],
+      "priority": "Embeber Chart.js para offline. Agregar botón de exportar datos. Considerar campo 'category' en findings para futuras agrupaciones."
+    }
+  ],
+  "cohort": [
+    ["PM-A", "PM de Producto", "Novato · Med · Alta", "Completó", "§06 (completo)", 3],
+    ["PM-B", "PM de Producto", "Inter · Grande · Media", "Completó", "§06 (completo)", 2],
+    ["PM-C", "PM de Producto", "Experto · Peq · Baja", "Completó", "§06 (completo)", 2],
+    ["PM-D", "PM de Producto", "Inter · Grande · Alta", "Completó", "§06 (completo)", 3],
+    ["PM-E", "PM de Producto", "Novato · Grande · Media", "Completó", "§06 (completo)", 2],
+    ["UXD-A", "UX Designer", "Novato · Med · Alta", "Completó", "§06 (completo)", 3],
+    ["UXD-B", "UX Designer", "Inter · Grande · Media", "Completó", "§06 (completo)", 2],
+    ["UXD-C", "UX Designer", "Experto · Peq · Baja", "Completó", "§06 (completo)", 3],
+    ["UXD-D", "UX Designer", "Inter · Grande · Alta", "Completó", "§06 (completo)", 2],
+    ["UXD-E", "UX Designer", "Novato · Grande · Media", "Completó", "§06 (completo)", 2],
+    ["PA-A", "Product Analyst", "Novato · Med · Alta", "Completó", "§06 (completo)", 2],
+    ["PA-B", "Product Analyst", "Inter · Grande · Media", "Completó", "§06 (completo)", 2],
+    ["PA-C", "Product Analyst", "Experto · Peq · Baja", "Completó", "§06 (completo)", 3],
+    ["PA-D", "Product Analyst", "Inter · Grande · Alta", "Completó", "§06 (completo)", 2],
+    ["PA-E", "Product Analyst", "Novato · Grande · Media", "Completó", "§06 (completo)", 2],
+    ["PL-A", "Product Lead", "Novato · Med · Alta", "Abandonó", "§01 (resumen)", 3],
+    ["PL-B", "Product Lead", "Inter · Grande · Media", "Completó", "§06 (completo)", 3],
+    ["PL-C", "Product Lead", "Experto · Peq · Baja", "Completó", "§06 (completo)", 2],
+    ["PL-D", "Product Lead", "Inter · Grande · Alta", "Abandonó", "§03 (hallazgos)", 4],
+    ["PL-E", "Product Lead", "Novato · Grande · Media", "Completó", "§06 (completo)", 2],
+    ["DEV-A", "Técnico", "Novato · Med · Alta", "Completó", "§06 (completo)", 1],
+    ["DEV-B", "Técnico", "Inter · Grande · Media", "Completó", "§06 (completo)", 1],
+    ["DEV-C", "Técnico", "Experto · Peq · Baja", "Completó", "§06 (completo)", 2],
+    ["DEV-D", "Técnico", "Inter · Grande · Alta", "Completó", "§06 (completo)", 1],
+    ["DEV-E", "Técnico", "Novato · Grande · Media", "Completó", "§06 (completo)", 1]
+  ]
+}
+  </script>
+  <script>
+    var REPORT_DATA = JSON.parse(document.getElementById("report-data-json").textContent);
+    var SEV_RANK = { CRITICO: 4, ALTO: 3, MEDIO: 2, BAJO: 1 };
+
+    function escapeHtml(s) {
+      if (s == null) return "";
+      return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+    function formatLead(s) {
+      if (!s) return "";
+      var parts = String(s).split(/\*\*(.+?)\*\*/g);
+      return parts.map(function(p, i) { return i % 2 === 1 ? "<strong>" + escapeHtml(p) + "</strong>" : escapeHtml(p); }).join("");
+    }
+    function effortClass(effort) {
+      var e = Number(effort);
+      if (e <= 1.5) return { cls: "bajo", label: "Esfuerzo bajo" };
+      if (e <= 2.5) return { cls: "medio", label: "Esfuerzo medio" };
+      return { cls: "alto", label: "Esfuerzo alto" };
+    }
+    function compareTop(a, b) {
+      var sa = a.impact / Math.max(0.5, a.effort);
+      var sb = b.impact / Math.max(0.5, b.effort);
+      if (sb !== sa) return sb - sa;
+      return (SEV_RANK[b.severity] || 0) - (SEV_RANK[a.severity] || 0);
+    }
+    function pickTopFindings(findings, limit) { return [].concat(findings).sort(compareTop).slice(0, limit); }
+    function sortRoadmap(findings) {
+      return [].concat(findings).sort(function(a, b) {
+        if (b.impact !== a.impact) return b.impact - a.impact;
+        if (a.effort !== b.effort) return a.effort - b.effort;
+        return (SEV_RANK[b.severity] || 0) - (SEV_RANK[a.severity] || 0);
+      });
+    }
+    function severityCounts(findings) {
+      var o = { CRITICO: 0, ALTO: 0, MEDIO: 0, BAJO: 0 };
+      findings.forEach(function(f) { if (o[f.severity] !== undefined) o[f.severity]++; });
+      return o;
+    }
+    function renderFindingInner(f) {
+      var freq = (f.frequency.affected + "/" + f.frequency.denominator + " " + (f.frequency.label || "")).trim();
+      var html = '<div class="meta-grid">';
+      html += '<div><dt>Roles afectados</dt><dd>' + escapeHtml(f.rolesAffected.join(", ")) + '</dd></div>';
+      html += '<div><dt>Frecuencia</dt><dd>' + escapeHtml(freq) + '</dd></div>';
+      html += "</div>";
+      html += '<div class="finding-body">';
+      html += "<h4>Descripci\u00f3n</h4><p>" + escapeHtml(f.description) + "</p>";
+      if (f.quote) html += '<div class="quote-box">\u201C' + escapeHtml(f.quote) + '\u201D</div>';
+      html += '<div class="change-box"><strong>Cambio sugerido:</strong> ' + escapeHtml(f.suggestedChange) + "</div>";
+      html += "<h4>Impacto en negocio</h4><p>" + escapeHtml(f.businessImpact) + "</p>";
+      html += "<h4>Criterios de aceptaci\u00f3n</h4><ul class=\"criteria-list\">";
+      (f.acceptanceCriteria || []).forEach(function(c) { html += "<li>" + escapeHtml(c) + "</li>"; });
+      html += "</ul>";
+      if (f.contentDraft) html += "<h4>Contenido sugerido (borrador)</h4><div class=\"draft-box\">" + escapeHtml(f.contentDraft) + "</div>";
+      html += "</div>";
+      return html;
+    }
+    function renderFindingCard(f, index) {
+      return '<div class="finding-card-rich" id="finding-' + escapeHtml(f.id) + '">' +
+        '<div class="finding-card-head">' +
+        '<span class="finding-badge-num">' + index + '</span>' +
+        '<div class="finding-titles-wrap"><span class="finding-id">' + escapeHtml(f.id) + '</span><h3>' + escapeHtml(f.title) + '</h3></div>' +
+        '<span class="sev ' + escapeHtml(f.severity) + '">' + escapeHtml(f.severity) + '</span>' +
+        '</div>' + renderFindingInner(f) + '</div>';
+    }
+    function renderRoleCards(cards) {
+      return cards.map(function(r) {
+        return '<div class="role-card"><h3>' + escapeHtml(r.title) + '</h3>' +
+          '<div class="block-fric"><h4>Fricciones</h4><ul>' + r.fricciones.map(function(x) { return '<li>' + escapeHtml(x) + '</li>'; }).join("") + '</ul></div>' +
+          '<div class="block-ok"><h4>Qu\u00e9 funcion\u00f3</h4><ul>' + r.ok.map(function(x) { return '<li>' + escapeHtml(x) + '</li>'; }).join("") + '</ul></div>' +
+          '<div class="role-foot"><strong>Prioridad:</strong> ' + escapeHtml(r.priority) + '</div></div>';
+      }).join("");
+    }
+    function init() {
+      var d = REPORT_DATA, m = d.meta;
+      document.title = m.pageTitle;
+      document.getElementById("cover-kicker").textContent = m.coverKicker;
+      document.getElementById("cover-product-title").textContent = m.productTitle;
+      document.getElementById("cover-key-question").textContent = m.keyQuestion;
+      document.getElementById("cover-pills").innerHTML = [["Fecha", m.dateLabel], ["Modo", m.modeLabel], ["Producto", m.productLabel], ["URL", m.url]].map(function(p) { return '<span class="pill"><strong>' + escapeHtml(p[0]) + ':</strong> ' + escapeHtml(p[1]) + '</span>'; }).join("");
+      document.getElementById("doc-bar").innerHTML = '<span><strong>Producto</strong> \u00b7 ' + escapeHtml(m.productLabel) + '</span><span><strong>URL</strong> \u00b7 <code>' + escapeHtml(m.url) + '</code></span><span><strong>Clasificaci\u00f3n</strong> \u00b7 ' + escapeHtml(m.docClassification) + '</span><span><strong>Ref.</strong> \u00b7 ' + escapeHtml(m.ref) + '</span>';
+      var comp = d.charts.completaron.reduce(function(a, b) { return a + b; }, 0);
+      var ab = d.charts.abandonaron.reduce(function(a, b) { return a + b; }, 0);
+      var fr = d.charts.fricciones.reduce(function(a, b) { return a + b; }, 0);
+      var n = m.cohortSize, nf = d.findings.length;
+      var topK = Math.min(m.topLimit || 7, nf);
+      var topList = pickTopFindings(d.findings, topK);
+      var kpis = [
+        { cls: "kpi--green", num: comp + '<small>/' + n + '</small>', lbl: "Completaron lectura del reporte", sub: "" },
+        { cls: "kpi--red", num: ab + '<small>/' + n + '</small>', lbl: "Abandonaron antes de extraer valor", sub: "" },
+        { cls: "kpi--amber", num: String(fr), lbl: "Fricciones detectadas", sub: "\u03a3 eventos simulados" },
+        { cls: "kpi--purple", num: String(nf), lbl: "Hallazgos sobre el reporte", sub: "Top " + topK + " en \u00a703 (matriz)" }
+      ];
+      document.getElementById("kpi-strip").innerHTML = kpis.map(function(k) {
+        return '<div class="kpi ' + k.cls + '"><div class="num">' + k.num + '</div><div class="lbl">' + escapeHtml(k.lbl) + '</div>' + (k.sub ? '<div class="sub">' + escapeHtml(k.sub) + '</div>' : '') + '<div class="kpi-bar"></div></div>';
+      }).join("");
+      document.getElementById("keyq-box").innerHTML = '<strong>Pregunta clave del estudio.</strong> ' + escapeHtml(m.keyQuestion);
+      var sum = d.summary, sb = "";
+      if (sum.bullets && sum.bullets.length) {
+        sb = '<ul class="exec-bullets">' + sum.bullets.map(function(b) { return '<li><strong>' + escapeHtml(b.title) + '</strong><ul>' + b.items.map(function(i) { return '<li>' + escapeHtml(i) + '</li>'; }).join("") + '</ul></li>'; }).join("") + "</ul>";
+      }
+      document.getElementById("sec-summary").innerHTML = '<p class="exec-lead">' + formatLead(sum.lead) + '</p>' + sb;
+      document.getElementById("charts-intro").textContent = m.chartsIntro || "";
+      document.getElementById("top-findings-note").textContent = "Top " + topList.length + " por matriz esfuerzo \u00d7 impacto (desempate por severidad). Total de hallazgos documentados: " + nf + ".";
+      document.getElementById("top-findings-root").innerHTML = topList.map(function(f, i) { return renderFindingCard(f, i + 1); }).join("");
+      document.getElementById("role-cards-root").innerHTML = renderRoleCards(d.roleCards || []);
+      document.getElementById("cohorte-body").innerHTML = (d.cohort || []).map(function(row) {
+        return '<tr><td><strong>' + escapeHtml(row[0]) + '</strong></td><td>' + escapeHtml(row[1]) + '</td><td>' + escapeHtml(row[2]) + '</td><td>' + escapeHtml(row[3]) + '</td><td><code>' + escapeHtml(row[4]) + '</code></td><td>' + escapeHtml(String(row[5])) + '</td></tr>';
+      }).join("");
+      var sc = severityCounts(d.findings);
+      document.getElementById("g3-sub").textContent = "Distribuci\u00f3n de los " + nf + " hallazgos documentados";
+      var ordered = sortRoadmap(d.findings);
+      document.getElementById("next-steps-root").innerHTML = ordered.map(function(f, i) {
+        var ef = effortClass(f.effort);
+        return '<details class="next-row" id="next-' + escapeHtml(f.id) + '"><summary><span class="next-num">' + (i + 1) + '</span><span class="next-title">' + escapeHtml(f.title) + '</span><span class="eff ' + ef.cls + '">' + ef.label + '</span></summary><div class="next-detail">' + renderFindingInner(f) + '</div></details>';
+      }).join("");
+      document.getElementById("footer").innerHTML = '<div style="font-weight:600;color:var(--gray-700);margin-bottom:4px;">Koin \u00b7 Meta-evaluaci\u00f3n de entregable</div>Ref. ' + escapeHtml(m.ref) + ' \u00b7 <code>SYNTHETIC_USERS_SKILL.md</code> v2';
+      var roles = d.charts.roles;
+      Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+      Chart.defaults.color = "#475467";
+      new Chart(document.getElementById("g1"), { type: "bar", data: { labels: roles, datasets: [{ label: "Completaron", data: d.charts.completaron, backgroundColor: "#10B132", stack: "s" }, { label: "Abandonaron", data: d.charts.abandonaron, backgroundColor: "#D92D20", stack: "s" }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom", labels: { boxWidth: 12, padding: 14 } } }, scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true, max: 5, ticks: { stepSize: 1 } } } } });
+      var cols = d.charts.frictionColors || ["#D92D20", "#DC6803", "#10B132", "#7C3AED", "#2563EB"];
+      new Chart(document.getElementById("g2"), { type: "bar", data: { labels: roles, datasets: [{ label: "Fricciones", data: d.charts.fricciones, backgroundColor: roles.map(function(_, i) { return cols[i % cols.length]; }), borderColor: roles.map(function(_, i) { return cols[i % cols.length]; }), borderWidth: 2, borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+      new Chart(document.getElementById("g3"), { type: "doughnut", data: { labels: ["CR\u00cdTICO", "ALTO", "MEDIO", "BAJO"], datasets: [{ data: [sc.CRITICO, sc.ALTO, sc.MEDIO, sc.BAJO], backgroundColor: ["#D92D20", "#DC6803", "#98A2B3", "#10B132"], borderWidth: 2, borderColor: "#fff" }] }, options: { responsive: true, maintainAspectRatio: false, cutout: "58%", plugins: { legend: { position: "right" } } } });
+      var scatterData = d.findings.map(function(f) { return { x: f.effort, y: f.impact, qw: !!f.quickWin, l: f.title }; });
+      new Chart(document.getElementById("g4"), { type: "scatter", data: { datasets: [{ label: "Hallazgos", data: scatterData.map(function(p) { return { x: p.x, y: p.y }; }), backgroundColor: scatterData.map(function(p) { return p.qw ? "#10B132" : "#98A2B3"; }), pointRadius: scatterData.map(function(p) { return p.qw ? 9 : 6; }) }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(ctx) { return scatterData[ctx.dataIndex] ? scatterData[ctx.dataIndex].l : ""; } } } }, scales: { x: { title: { display: true, text: "Esfuerzo (menor \u2192 izquierda)" }, min: 0, max: 3.5, grid: { color: "#EAECF0" } }, y: { title: { display: true, text: "Impacto (mayor \u2192 arriba)" }, min: 0, max: 5.5, grid: { color: "#EAECF0" } } } } });
+    }
+    init();
+  </script>
+</body>
+</html>

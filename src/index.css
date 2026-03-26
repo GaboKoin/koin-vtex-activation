@@ -1,0 +1,190 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-gray-25: #fcfcfd;
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f2f4f7;
+  --color-gray-200: #eaecf0;
+  --color-gray-300: #d0d5dd;
+  --color-gray-400: #98a2b3;
+  --color-gray-500: #667085;
+  --color-gray-600: #475467;
+  --color-gray-700: #344054;
+  --color-gray-800: #182230;
+  --color-gray-900: #101828;
+  --color-gray-950: #0c111d;
+  --color-brand-25: #fafef9;
+  --color-brand-light: #f6fef9;
+  --color-brand-mid: #dcfae6;
+  --color-brand-dark: #067647;
+  --color-brand-600: #10b132;
+  --color-success-50: #ecfdf3;
+  --color-success-600: #079455;
+  --color-error-50: #fef3f2;
+  --color-error-600: #d92d20;
+  --color-warning-50: #fffaeb;
+  --color-warning-600: #dc6803;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-gray-50);
+  color: var(--color-gray-900);
+}
+
+.koin-chat-rich strong {
+  font-weight: 600;
+  color: var(--color-gray-900);
+}
+.koin-chat-rich code {
+  font-size: 0.8125rem;
+  font-family: ui-monospace, monospace;
+  background: var(--color-gray-100);
+  border: 1px solid var(--color-gray-200);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  color: var(--color-brand-600);
+}
+.koin-pre-wrap {
+  position: relative;
+  margin-top: 0.5rem;
+}
+.koin-pre-wrap pre {
+  margin-top: 0;
+  padding: 2rem 0.75rem 0.75rem;
+}
+.koin-pre-copy-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 1;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--color-gray-600);
+  background: var(--color-gray-800);
+  color: var(--color-brand-600);
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+.koin-pre-copy-btn:hover {
+  background: var(--color-gray-700);
+}
+.koin-chat-rich pre {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background: var(--color-gray-900);
+  border: 1px solid var(--color-gray-800);
+  border-left: 3px solid var(--color-brand-600);
+  border-radius: 0 0.5rem 0.5rem 0;
+  font-size: 0.75rem;
+  font-family: ui-monospace, monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: var(--color-brand-600);
+}
+.koin-chat-rich .steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.koin-chat-rich .step-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 0.375rem;
+}
+.koin-chat-rich .step-row.done {
+  border-color: rgba(16, 177, 50, 0.35);
+}
+.koin-chat-rich .step-num {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 9999px;
+  background: var(--color-brand-25);
+  color: var(--color-brand-600);
+  border: 1px solid rgba(16, 177, 50, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.625rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.koin-chat-rich .step-check {
+  color: var(--color-success-600);
+  width: 1.25rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+.koin-chat-rich .stxt {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+.koin-chat-rich .slabel {
+  font-size: 0.6875rem;
+  color: var(--color-gray-500);
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+.koin-chat-rich .tip {
+  border-left: 2px solid var(--color-brand-600);
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--color-brand-dark);
+  background: rgba(16, 177, 50, 0.05);
+  border-radius: 0 0.375rem 0.375rem 0;
+}
+.koin-chat-rich .warn-box {
+  border-left: 2px solid var(--color-warning-600);
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+  background: var(--color-warning-50);
+  color: var(--color-gray-700);
+  border-radius: 0 0.375rem 0.375rem 0;
+}
+.koin-chat-rich .ok-box {
+  border-left: 2px solid var(--color-success-600);
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+  background: var(--color-success-50);
+  color: var(--color-gray-800);
+  border-radius: 0 0.375rem 0.375rem 0;
+}
+.koin-chat-rich .err-box {
+  border-left: 2px solid var(--color-error-600);
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+  background: #fef3f2;
+  color: var(--color-gray-800);
+  border-radius: 0 0.375rem 0.375rem 0;
+}
+.koin-chat-rich a {
+  color: var(--color-brand-600);
+  text-decoration: underline;
+}
+
+@keyframes koin-success-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(7, 148, 85, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(7, 148, 85, 0);
+  }
+}
+
+.koin-success-ring {
+  animation: koin-success-pulse 2s ease-in-out infinite;
+}

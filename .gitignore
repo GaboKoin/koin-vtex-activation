@@ -1,0 +1,29 @@
+# Dependencias y build
+node_modules/
+portal/node_modules/
+portal/dist/
+dist/
+
+# Entorno y logs
+.env
+.env.*
+*.log
+npm-debug.log*
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.cursor/
+*.swp
+
+# Archivos comprimidos sueltos
+Skills.zip
+
+# Vite / cache
+portal/.vite/
+.cache/
+
+# Archivos temporales locales
+git-out.txt

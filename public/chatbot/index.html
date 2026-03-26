@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Koin — Activá la validación de identidad</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #181818;
+    --border: #252525;
+    --border2: #303030;
+    --koin: #39ff14;
+    --koin-dim: #1a4a09;
+    --koin-text: #2dcc10;
+    --text: #f0f0f0;
+    --text2: #888;
+    --text3: #555;
+    --warn: #f59e0b;
+    --warn-bg: #1a1400;
+    --ok: #22c55e;
+    --ok-bg: #001a0d;
+    --err: #ef4444;
+    --err-bg: #1a0000;
+    --info: #60a5fa;
+    --info-bg: #001020;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 0;
+  }
+  #topbar {
+    width: 100%; background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 14px 24px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10;
+  }
+  .logo-mark {
+    width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--koin);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 14px; color: var(--koin); flex-shrink: 0;
+    box-shadow: 0 0 10px rgba(57,255,20,0.15);
+  }
+  .topbar-info { flex: 1; }
+  .topbar-title { font-size: 14px; font-weight: 700; color: var(--text); }
+  .topbar-sub { font-size: 11px; color: var(--text2); margin-top: 1px; font-family: 'DM Mono', monospace; }
+  .mission-pill {
+    background: var(--koin-dim); color: var(--koin); border: 1px solid rgba(57,255,20,0.3);
+    font-size: 10px; font-family: 'DM Mono', monospace; padding: 4px 10px; border-radius: 20px; letter-spacing: 0.05em;
+  }
+  #progress-bar { width: 100%; height: 3px; background: var(--border); position: relative; }
+  #progress-fill { height: 100%; background: var(--koin); width: 0%; transition: width 0.6s ease; box-shadow: 0 0 8px rgba(57,255,20,0.5); }
+  #progress-label { position: absolute; right: 12px; top: 6px; font-size: 10px; font-family: 'DM Mono', monospace; color: var(--text3); }
+  #main { width: 100%; max-width: 720px; display: flex; flex-direction: column; height: calc(100vh - 53px); }
+  #msgs {
+    flex: 1; overflow-y: auto; padding: 20px 20px 10px; display: flex; flex-direction: column; gap: 12px;
+    scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+  }
+  #msgs::-webkit-scrollbar { width: 4px; }
+  #msgs::-webkit-scrollbar-track { background: transparent; }
+  #msgs::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+  .m { display: flex; gap: 10px; max-width: 88%; animation: fadeUp 0.25s ease; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .m.b { align-self: flex-start; }
+  .m.u { align-self: flex-end; flex-direction: row-reverse; }
+  .av {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; flex-shrink: 0; margin-top: 2px;
+  }
+  .b .av { background: #111; border: 1px solid var(--koin); color: var(--koin); }
+  .u .av { background: var(--info-bg); border: 1px solid var(--info); color: var(--info); font-size: 9px; }
+  .bbl { padding: 12px 15px; font-size: 13.5px; line-height: 1.65; max-width: 100%; }
+  .b .bbl { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 3px 10px 10px 10px; }
+  .u .bbl { background: #0d1f0d; border: 1px solid rgba(57,255,20,0.2); color: #c8f5b8; border-radius: 10px 3px 10px 10px; font-size: 13px; }
+  .bbl strong { color: var(--text); font-weight: 700; }
+  .bbl code {
+    background: var(--surface2); border: 1px solid var(--border2); padding: 2px 7px; border-radius: 4px;
+    font-family: 'DM Mono', monospace; font-size: 11.5px; color: var(--koin-text);
+  }
+  .bbl pre {
+    background: var(--surface2); border: 1px solid var(--border2); border-left: 3px solid var(--koin);
+    border-radius: 0 8px 8px 0; padding: 12px 14px; font-family: 'DM Mono', monospace; font-size: 11.5px;
+    color: var(--koin-text); overflow-x: auto; margin-top: 10px; line-height: 1.6; white-space: pre-wrap; word-break: break-all;
+  }
+  .steps-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+  .step-row {
+    display: flex; align-items: flex-start; gap: 10px; padding: 9px 12px;
+    background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); transition: border-color 0.2s;
+  }
+  .step-row.done { border-color: rgba(57,255,20,0.3); }
+  .step-num {
+    width: 20px; height: 20px; border-radius: 50%; background: var(--koin-dim); color: var(--koin);
+    display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; flex-shrink: 0;
+    font-family: 'DM Mono', monospace; margin-top: 1px;
+  }
+  .step-check { color: var(--ok); font-size: 13px; width: 20px; text-align: center; flex-shrink: 0; margin-top: 1px; }
+  .stxt { font-size: 13px; color: var(--text); line-height: 1.5; }
+  .slabel { font-size: 11px; color: var(--text2); margin-top: 3px; line-height: 1.4; }
+  .tip {
+    border-left: 2px solid var(--koin); padding: 8px 11px; margin-top: 10px; font-size: 12.5px;
+    color: var(--text2); background: rgba(57,255,20,0.04); border-radius: 0 6px 6px 0; line-height: 1.5;
+  }
+  .warn-box {
+    border-left: 2px solid var(--warn); padding: 8px 11px; margin-top: 10px; font-size: 12.5px;
+    color: #c9a44a; background: var(--warn-bg); border-radius: 0 6px 6px 0; line-height: 1.5;
+  }
+  .ok-box {
+    border-left: 2px solid var(--ok); padding: 8px 11px; margin-top: 10px; font-size: 12.5px;
+    color: #4ade80; background: var(--ok-bg); border-radius: 0 6px 6px 0; line-height: 1.5;
+  }
+  .err-box {
+    border-left: 2px solid var(--err); padding: 8px 11px; margin-top: 10px; font-size: 12.5px;
+    color: #f87171; background: var(--err-bg); border-radius: 0 6px 6px 0; line-height: 1.5;
+  }
+  .typing { display: flex; gap: 5px; align-items: center; padding: 6px 2px; }
+  .typing span {
+    width: 6px; height: 6px; background: var(--koin); border-radius: 50%; animation: pulse 1.2s infinite; opacity: 0.4;
+  }
+  .typing span:nth-child(2) { animation-delay: .2s; }
+  .typing span:nth-child(3) { animation-delay: .4s; }
+  @keyframes pulse { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
+  #opts {
+    padding: 10px 20px; border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 7px;
+    min-height: 54px; align-items: center; background: var(--surface);
+  }
+  .ob {
+    padding: 7px 15px; border: 1px solid var(--border2); border-radius: 20px; background: transparent;
+    color: var(--text2); font-size: 12.5px; font-family: 'Syne', sans-serif; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  }
+  .ob:hover { border-color: var(--koin); color: var(--koin); background: rgba(57,255,20,0.05); }
+  .ob.p { background: var(--koin-dim); color: var(--koin); border-color: rgba(57,255,20,0.4); font-weight: 700; }
+  .ob.p:hover { background: rgba(57,255,20,0.2); }
+  #inp-row { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; background: var(--bg); }
+  #inp {
+    flex: 1; padding: 10px 14px; border: 1px solid var(--border2); border-radius: var(--radius-sm);
+    font-size: 13.5px; font-family: 'Syne', sans-serif; background: var(--surface); color: var(--text); outline: none; transition: border-color 0.2s;
+  }
+  #inp:focus { border-color: rgba(57,255,20,0.4); }
+  #inp::placeholder { color: var(--text3); }
+  #snd {
+    padding: 10px 22px; background: var(--koin-dim); color: var(--koin); border: 1px solid rgba(57,255,20,0.3);
+    border-radius: var(--radius-sm); font-size: 13px; font-family: 'Syne', sans-serif; font-weight: 700; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  }
+  #snd:hover { background: rgba(57,255,20,0.2); box-shadow: 0 0 12px rgba(57,255,20,0.1); }
+  #success-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 100;
+    align-items: center; justify-content: center; flex-direction: column; gap: 24px; animation: fadeIn 0.4s ease;
+  }
+  #success-overlay.show { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .success-ring {
+    width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--koin);
+    display: flex; align-items: center; justify-content: center; font-size: 42px;
+    box-shadow: 0 0 40px rgba(57,255,20,0.3), inset 0 0 30px rgba(57,255,20,0.05);
+    animation: ringPulse 2s ease infinite;
+  }
+  @keyframes ringPulse { 0%,100%{box-shadow:0 0 20px rgba(57,255,20,0.2)} 50%{box-shadow:0 0 50px rgba(57,255,20,0.5)} }
+  .success-title { font-size: 28px; font-weight: 800; color: var(--koin); text-align: center; }
+  .success-sub { font-size: 14px; color: var(--text2); text-align: center; max-width: 320px; line-height: 1.6; font-family: 'DM Mono', monospace; }
+  .success-btn {
+    margin-top: 8px; padding: 11px 28px; background: var(--koin-dim); color: var(--koin);
+    border: 1px solid rgba(57,255,20,0.4); border-radius: var(--radius);
+    font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+  }
+  .success-btn:hover { background: rgba(57,255,20,0.2); }
+  @media (max-width: 500px) {
+    .topbar-title { font-size: 13px; }
+    .bbl { font-size: 13px; }
+    #inp { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="logo-mark">K</div>
+  <div class="topbar-info">
+    <div class="topbar-title">Koin — Activación de validación de identidad</div>
+    <div class="topbar-sub">VTEX + Google Tag Manager</div>
+  </div>
+  <div class="mission-pill">MISIÓN: ACTIVAR</div>
+</div>
+
+<div id="progress-bar">
+  <div id="progress-fill"></div>
+</div>
+
+<div id="main">
+  <div id="msgs"></div>
+  <div id="opts"></div>
+  <div id="inp-row">
+    <input id="inp" type="text" placeholder="Escribí tu consulta o usá los botones..." autocomplete="off" />
+    <button id="snd">Enviar</button>
+  </div>
+</div>
+
+<div id="success-overlay">
+  <div class="success-ring">✓</div>
+  <div class="success-title">¡Validación activada!</div>
+  <div class="success-sub">El componente de Koin está funcionando en tu tienda. Tus compradores ya cuentan con validación de identidad activa.</div>
+  <button class="success-btn" onclick="document.getElementById('success-overlay').classList.remove('show')">Ver resumen final</button>
+</div>
+
+<script>
+const STEPS_PROGRESS = {
+  welcome: 5,
+  prereqs: 8,
+  donde_id_gtm: 10,
+  paso1_vtex: 20,
+  app_no_encontrada: 20,
+  verificar_gtm: 35,
+  gtm_no_carga: 35,
+  paso2_activador: 45,
+  que_es_path: 45,
+  gtm_ayuda_activador: 45,
+  paso3_tag: 60,
+  sandbox_vs_prod: 60,
+  script_sandbox: 72,
+  script_prod: 72,
+  como_pegar_script: 72,
+  paso4_publicar: 85,
+  checklist: 92,
+  fin: 100,
+  debug_menu: 30,
+  debug_not_fired: 30,
+  debug_not_fired_2: 30,
+  debug_no_modal: 30,
+  debug_csp: 30,
+  debug_wrong_pages: 30,
+  debug_checkout_blocked: 30,
+  debug_console: 30,
+  support_contact: 20,
+};
+
+const KB = {
+  welcome:{
+    text:`<div class="tip" style="margin-bottom:12px">Tiempo estimado total: <strong>15–20 minutos</strong> (según permisos en VTEX y GTM). Podés pausar y retomar más tarde.</div><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt">Instalar Google Tag Manager en tu tienda VTEX</div><div class="slabel">Desde el panel de administración de VTEX</div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt">Crear una regla en GTM para la página de confirmación de compra</div><div class="slabel">Desde tu cuenta de Google Tag Manager</div></div></div><div class="step-row"><span class="step-num">3</span><div><div class="stxt">Crear el tag con el script de Koin y asociarlo a esa regla</div><div class="slabel">Desde Google Tag Manager</div></div></div><div class="step-row"><span class="step-num">4</span><div><div class="stxt">Probar y publicar</div><div class="slabel">Todo desde GTM</div></div></div></div><br>¿Por dónde empezamos?`,
+    opts:[
+      {l:'Empezar desde el paso 1',n:'paso1_vtex'},
+      {l:'Ya tengo GTM en VTEX, ir al paso 2',n:'paso2_activador'},
+      {l:'Ya tengo la regla, ir al paso 3',n:'paso3_tag'},
+      {l:'¿Qué necesito antes de empezar?',n:'prereqs'},
+    ]
+  },
+  prereqs:{
+    text:`Antes de empezar, asegurate de tener estas tres cosas:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt">Acceso de administrador a tu tienda VTEX</div><div class="slabel">Tu usuario tiene que poder instalar apps</div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt">Una cuenta de Google con acceso a Google Tag Manager</div><div class="slabel">Si no tenés, podés crear una gratis en tagmanager.google.com</div></div></div><div class="step-row"><span class="step-num">3</span><div><div class="stxt">El ID de tu contenedor GTM</div><div class="slabel">Es un código que empieza con GTM-, por ejemplo GTM-ABC1234</div></div></div></div><div class="tip">Si no sabés cuál es tu ID de GTM, entrá a tagmanager.google.com, seleccioná tu contenedor y el ID aparece en la parte superior de la pantalla.</div>`,
+    opts:[
+      {l:'Tengo todo, empezar',n:'paso1_vtex'},
+      {l:'¿Dónde encuentro mi ID de GTM?',n:'donde_id_gtm'},
+    ]
+  },
+  donde_id_gtm:{
+    text:`Tu ID de GTM está acá:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt">Entrá a tagmanager.google.com</div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt">Seleccioná tu cuenta y tu contenedor</div></div></div><div class="step-row"><span class="step-num">3</span><div><div class="stxt">El ID aparece arriba a la derecha, con el formato GTM-XXXXXX</div></div></div></div><div class="tip">Si nunca usaste GTM, podés crear una cuenta nueva en ese mismo sitio. Es completamente gratis.</div>`,
+    opts:[
+      {l:'Ya tengo mi ID, continuar',n:'paso1_vtex'},
+    ]
+  },
+  paso1_vtex:{
+    text:`<strong>Paso 1 — Instalar GTM en tu tienda VTEX</strong><br><br>Hacé esto desde el panel de administración de VTEX:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt">Entrá al Admin de VTEX y buscá la sección <strong>Apps</strong> o <strong>Extensions Hub</strong></div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt">Hacé clic en <strong>App Store</strong></div></div></div><div class="step-row"><span class="step-num">3</span><div><div class="stxt">Buscá <strong>"Google Tag Manager"</strong> e instalá la app</div></div></div><div class="step-row"><span class="step-num">4</span><div><div class="stxt">Ingresá tu ID de GTM (el código GTM-XXXXXX) en la configuración</div></div></div><div class="step-row"><span class="step-num">5</span><div><div class="stxt">Guardá y confirmá</div></div></div></div><div class="tip">No hace falta tocar código ni editar archivos. Todo se hace desde el panel.</div>`,
+    opts:[
+      {l:'Listo, ir al paso 2',n:'paso2_activador'},
+      {l:'No encuentro la app en VTEX',n:'app_no_encontrada'},
+      {l:'¿Cómo sé si quedó bien instalado?',n:'verificar_gtm'},
+    ]
+  },
+  app_no_encontrada:{
+    text:`Si no encontrás la app en el App Store de VTEX, probá esto:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt">Buscá solo <strong>"Tag Manager"</strong> en vez del nombre completo</div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt">Verificá que tu usuario tenga rol de Administrador en VTEX</div><div class="slabel">Los usuarios con roles limitados no ven todas las apps</div></div></div><div class="step-row"><span class="step-num">3</span><div><div class="stxt">Si sigue sin aparecer, contactá a tu Account Manager de VTEX</div><div class="slabel">Algunos planes requieren habilitación especial</div></div></div></div>`,
+    opts:[
+      {l:'La encontré, continuar con la instalación',n:'paso1_vtex'},
+      {l:'Contactar soporte VTEX',n:'soporte_vtex'},
+    ]
+  },
+  soporte_vtex:{
+    text:`Para contactar al soporte de VTEX sobre el App Store:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt">Iniciá una solicitud en el portal de soporte de VTEX</div><div class="slabel">help.vtex.com</div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt">Mencioná que necesitás acceso a la app "Google Tag Manager" en el App Store</div></div></div></div><div class="tip">También podés instalar GTM manualmente si tenés acceso al código de la tienda. Consultá con tu equipo técnico.</div>`,
+    opts:[
+      {l:'Lo resolví, continuar al paso 2',n:'paso2_activador'},
+      {l:'↩ Volver al inicio',n:'welcome'},
+    ]
+  },
+  verificar_gtm:{
+    text:`Para confirmar que GTM quedó bien instalado:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt">Abrí tu tienda en el navegador</div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt">Hacé clic derecho en la página → <strong>"Ver código fuente"</strong></div></div></div><div class="step-row"><span class="step-num">3</span><div><div class="stxt">Buscá tu código <strong>GTM-XXXXXX</strong> en el texto</div><div class="slabel">Si aparece, GTM está instalado y activo</div></div></div></div><div class="tip">También podés instalar la extensión gratuita <strong>Tag Assistant</strong> de Google en Chrome — te muestra automáticamente si GTM está activo.</div>`,
+    opts:[
+      {l:'GTM está activo, ir al paso 2',n:'paso2_activador'},
+      {l:'No aparece GTM en mi tienda',n:'gtm_no_carga'},
+    ]
+  },
+  gtm_no_carga:{
+    text:`Si GTM no aparece en tu tienda, revisá estos puntos:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt">¿Guardaste el ID de GTM en la configuración de la app de VTEX?</div><div class="slabel">A veces parece que se guardó pero faltó confirmar</div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt">Limpiá el caché del navegador y volvé a cargar la tienda</div></div></div><div class="step-row"><span class="step-num">3</span><div><div class="stxt">Asegurate de estar mirando la tienda publicada, no un ambiente de prueba</div></div></div></div><div class="warn-box">Si después de estos pasos sigue sin cargar, puede haber un problema de configuración en VTEX. Contactá al soporte de VTEX con tu Container ID.</div>`,
+    opts:[
+      {l:'Se solucionó, continuar al paso 2',n:'paso2_activador'},
+      {l:'Contactar soporte',n:'support_contact'},
+    ]
+  },
+  paso2_activador:{
+    text:`<strong>Paso 2 — Crear una regla en GTM</strong><br><br>Esta regla le dice a GTM que el script de Koin solo se active cuando alguien termina una compra. Hacé esto en tu cuenta de GTM:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt">Entrá a tu cuenta en <strong>tagmanager.google.com</strong></div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt">En el menú izquierdo, hacé clic en <strong>Activadores</strong> → <strong>Nuevo</strong></div></div></div><div class="step-row"><span class="step-num">3</span><div><div class="stxt">Elegí el tipo: <strong>"Vista de una página"</strong></div></div></div><div class="step-row"><span class="step-num">4</span><div><div class="stxt">Configurá la condición: <strong>Ruta de la página → contiene → /checkout/orderPlaced</strong></div></div></div><div class="step-row"><span class="step-num">5</span><div><div class="stxt">Poné el nombre <code>pageViewOrderPlaced</code> y guardá</div></div></div></div><div class="tip">Esta regla hace que el script solo se ejecute en la página de confirmación de compra, no en toda la tienda.</div>`,
+    opts:[
+      {l:'Regla creada, ir al paso 3',n:'paso3_tag'},
+      {l:'¿Qué es "Ruta de la página"?',n:'que_es_path'},
+      {l:'Tengo dudas sobre cómo navegar en GTM',n:'gtm_ayuda_activador'},
+    ]
+  },
+  que_es_path:{
+    text:`La "Ruta de la página" es la parte de la URL que viene después de tu dominio.<br><br>Por ejemplo, si la URL de confirmación de tu tienda es:<br><code>https://mitienda.com/checkout/orderPlaced?og=123</code><br><br>La ruta sería: <code>/checkout/orderPlaced</code><br><br>Usamos <strong>"contiene"</strong> y no "es igual a" porque VTEX agrega un código de orden al final de la URL, y con "es igual a" la regla no funcionaría.`,
+    opts:[
+      {l:'Entendido, volver a crear la regla',n:'paso2_activador'},
+    ]
+  },
+  gtm_ayuda_activador:{
+    text:`Guía rápida para navegar GTM:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt">El menú izquierdo tiene tres secciones: <strong>Etiquetas</strong>, <strong>Activadores</strong> y <strong>Variables</strong></div><div class="slabel">Los Activadores son las "reglas" que definen cuándo se ejecuta algo</div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt">Al crear un activador, primero elegís el tipo — buscá <strong>Vista de página</strong></div></div></div><div class="step-row"><span class="step-num">3</span><div><div class="stxt">Después elegís <strong>"Algunos eventos de vista de página"</strong> para poder agregar condiciones</div></div></div></div>`,
+    opts:[
+      {l:'Entendido, crear la regla',n:'paso2_activador'},
+    ]
+  },
+  paso3_tag:{
+    text:`<strong>Paso 3 — Crear el tag con el script de Koin</strong><br><br>Ahora creamos el tag — es el script que activa la validación de identidad. Seguí en GTM:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt">En el menú izquierdo, hacé clic en <strong>Etiquetas</strong> → <strong>Nueva</strong></div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt">En "Configuración de la etiqueta", elegí el tipo <strong>HTML personalizado</strong></div><div class="slabel">Importante que sea exactamente ese tipo, no otro</div></div></div><div class="step-row"><span class="step-num">3</span><div><div class="stxt">Pegá el script de Koin en el cuadro de texto</div></div></div><div class="step-row"><span class="step-num">4</span><div><div class="stxt">En la sección <strong>Activación</strong>, seleccioná <code>pageViewOrderPlaced</code></div></div></div><div class="step-row"><span class="step-num">5</span><div><div class="stxt">Nombralo <code>redirectStrategiesKoinPageView</code> y guardá</div></div></div></div><br>¿Qué script necesitás?`,
+    opts:[
+      {l:'Script para pruebas (Sandbox)',n:'script_sandbox'},
+      {l:'Script para producción (tienda real)',n:'script_prod'},
+      {l:'¿Cuál debería usar?',n:'sandbox_vs_prod'},
+    ]
+  },
+  sandbox_vs_prod:{
+    text:`Hay dos versiones del script:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt"><strong>Sandbox</strong> — para cuando estás probando</div><div class="slabel">Usalo mientras verificás que todo funciona. No genera validaciones reales.</div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt"><strong>Producción</strong> — para cuando ya está todo validado</div><div class="slabel">Este activa la validación real para tus compradores.</div></div></div></div><div class="tip">Lo ideal es: primero probá con Sandbox → cuando todo funcione → cambiá a Producción y republicá.</div>`,
+    opts:[
+      {l:'Ver script de Sandbox',n:'script_sandbox'},
+      {l:'Ver script de Producción',n:'script_prod'},
+    ]
+  },
+  script_sandbox:{
+    text:`Script para <strong>pruebas</strong> — copialo y pegalo en el campo HTML del tag en GTM:<br><pre>&lt;script src="https://portal-dev.koin.com.br/argus-static/scripts/vtex/v1/gtm_script.js"&gt;&lt;/script&gt;</pre><div class="warn-box">Este script es solo para pruebas. Cuando todo funcione, acordate de cambiarlo por el de producción antes de publicar definitivamente.</div>`,
+    opts:[
+      {l:'Script pegado, ir al paso 4',n:'paso4_publicar'},
+      {l:'Ver script de Producción',n:'script_prod'},
+      {l:'↩ Volver al paso 3',n:'paso3_tag'},
+    ]
+  },
+  script_prod:{
+    text:`Script para la <strong>tienda real</strong> — copialo y pegalo en el campo HTML del tag en GTM:<br><pre>&lt;script src="https://antifraud.koin.com.br/argus-static/scripts/vtex/v1/gtm_script.js"&gt;&lt;/script&gt;</pre><div class="ok-box">Este script activa la validación de identidad real. Usalo cuando hayas confirmado que todo funciona con el script de Sandbox.</div>`,
+    opts:[
+      {l:'Script pegado, ir al paso 4',n:'paso4_publicar'},
+      {l:'Ver script de Sandbox',n:'script_sandbox'},
+      {l:'↩ Volver al paso 3',n:'paso3_tag'},
+    ]
+  },
+  paso4_publicar:{
+    text:`<strong>Paso 4 — Probar y publicar</strong><br><br>Antes de publicar, probá que todo funciona correctamente:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt">En GTM, hacé clic en el botón <strong>"Vista previa"</strong> (arriba a la derecha)</div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt">Ingresá la URL de tu tienda y conectate</div></div></div><div class="step-row"><span class="step-num">3</span><div><div class="stxt">Realizá una compra de prueba en tu tienda</div><div class="slabel">O navegá directamente a la página de confirmación de compra</div></div></div><div class="step-row"><span class="step-num">4</span><div><div class="stxt">Verificá que el tag <code>redirectStrategiesKoinPageView</code> aparezca como <strong>activado</strong> en el panel de GTM</div></div></div><div class="step-row"><span class="step-num">5</span><div><div class="stxt">Si todo está bien, cerrá Vista previa y hacé clic en <strong>"Enviar"</strong> para publicar</div></div></div></div>`,
+    opts:[
+      {l:'Todo funciona, ver checklist final',n:'checklist'},
+      {l:'El tag no aparece como activado',n:'debug_not_fired'},
+      {l:'El componente de Koin no aparece',n:'debug_no_modal'},
+    ]
+  },
+  checklist:{
+    text:`<strong>Verificación final — casi en la meta</strong><br><br>Confirmá cada punto antes de cerrar:<br><br><div class="steps-list"><div class="step-row done"><span class="step-check">✓</span><div><div class="stxt">GTM instalado en VTEX con tu Container ID</div></div></div><div class="step-row done"><span class="step-check">✓</span><div><div class="stxt">Regla <code>pageViewOrderPlaced</code> creada con la condición correcta</div></div></div><div class="step-row done"><span class="step-check">✓</span><div><div class="stxt">Tag <code>redirectStrategiesKoinPageView</code> con tipo HTML personalizado</div></div></div><div class="step-row done"><span class="step-check">✓</span><div><div class="stxt">Script de Koin pegado en el tag (sandbox o producción)</div></div></div><div class="step-row done"><span class="step-check">✓</span><div><div class="stxt">El tag se activó correctamente en la Vista previa de GTM</div></div></div><div class="step-row done"><span class="step-check">✓</span><div><div class="stxt">Contenedor publicado en GTM</div></div></div></div>`,
+    opts:[
+      {l:'Todo correcto — misión cumplida!',n:'fin'},
+      {l:'Algo no funciona todavía',n:'debug_menu'},
+    ]
+  },
+  fin:{
+    text:`<div class="ok-box">Validación de identidad activa en tu tienda.</div><br>A partir de ahora, cuando alguien termine una compra en tu tienda, el componente de Koin se activará automáticamente para validar su identidad.<br><br>Si en algún momento necesitás actualizar el script (por ejemplo, pasar de pruebas a producción), simplemente editá el tag en GTM y volvé a publicar.`,
+    opts:[
+      {l:'Ver checklist nuevamente',n:'checklist'},
+      {l:'Tengo otra consulta',n:'welcome'},
+    ]
+  },
+  debug_menu:{
+    text:`Contame qué está pasando para ayudarte a resolverlo:`,
+    opts:[
+      {l:'El tag no se activa en la prueba',n:'debug_not_fired'},
+      {l:'El componente de Koin no aparece',n:'debug_no_modal'},
+      {l:'La tienda se bloquea después de la compra',n:'debug_checkout_blocked'},
+      {l:'GTM no carga en mi tienda',n:'gtm_no_carga'},
+      {l:'El script carga en todas las páginas',n:'debug_wrong_pages'},
+      {l:'Veo un error en la pantalla negra (consola)',n:'debug_console'},
+    ]
+  },
+  debug_not_fired:{
+    text:`Si el tag no se activa durante la prueba, revisá en orden:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt">¿La condición de la regla está escrita exactamente así? <code>/checkout/orderPlaced</code></div><div class="slabel">Un espacio o letra de más lo rompe</div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt">¿La regla está asociada al tag? Abrí el tag y fijate que en "Activación" aparezca <code>pageViewOrderPlaced</code></div></div></div><div class="step-row"><span class="step-num">3</span><div><div class="stxt">¿El código GTM-XXXXXX que configuraste en VTEX es el mismo contenedor que estás editando?</div></div></div></div><div class="tip">Si llegaste a la página de confirmación de compra y el tag no aparece en el panel de Vista previa, el problema está en la regla o en la asociación.</div>`,
+    opts:[
+      {l:'Lo encontré y lo corregí',n:'paso4_publicar'},
+      {l:'Sigue sin funcionar',n:'debug_not_fired_2'},
+      {l:'↩ Volver',n:'debug_menu'},
+    ]
+  },
+  debug_not_fired_2:{
+    text:`Si los pasos anteriores no resolvieron el problema, puede haber algo más:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt">¿Tu tienda abre el checkout en una dirección diferente?</div><div class="slabel">Por ejemplo, algunas tiendas usan "secure.tutienda.com" para el pago. Si es así, GTM puede no estar cargando en esa parte.</div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt">¿Verificaste que GTM está cargando en la página de confirmación específicamente?</div><div class="slabel">Podés verificarlo con la extensión Tag Assistant de Chrome</div></div></div></div><div class="warn-box">Si ninguno de los pasos anteriores resolvió el problema, contactá al equipo de Koin con capturas de la configuración del tag y la regla.</div>`,
+    opts:[
+      {l:'Contactar equipo de Koin',n:'support_contact'},
+      {l:'↩ Volver',n:'debug_menu'},
+    ]
+  },
+  debug_no_modal:{
+    text:`Si el tag se activa pero el componente de Koin no aparece en la tienda:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt">Verificá que el tipo de tag sea exactamente <strong>HTML personalizado</strong></div><div class="slabel">Si elegiste otro tipo, el script no va a funcionar</div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt">Revisá que el script esté pegado completo, sin texto extra al principio o al final</div></div></div><div class="step-row"><span class="step-num">3</span><div><div class="stxt">Abrí las herramientas del navegador (tecla F12) → pestaña <strong>Consola</strong></div><div class="slabel">Si ves un mensaje que dice "Refused to load script", hay un bloqueo de seguridad en la tienda</div></div></div></div>`,
+    opts:[
+      {l:'Veo un mensaje de "Refused to load"',n:'debug_csp'},
+      {l:'No veo errores pero sigue sin aparecer',n:'support_contact'},
+      {l:'↩ Volver',n:'debug_menu'},
+    ]
+  },
+  debug_csp:{
+    text:`Este error significa que la tienda está bloqueando el script de Koin por razones de seguridad.<br><br>Para resolverlo, alguien con acceso técnico a la tienda tiene que <strong>agregar los dominios de Koin a la lista de sitios permitidos</strong>:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt"><code>portal-dev.koin.com.br</code></div><div class="slabel">Para el script de pruebas (Sandbox)</div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt"><code>antifraud.koin.com.br</code></div><div class="slabel">Para el script de producción</div></div></div></div><div class="tip">Si no sabés cómo hacer esto, compartí este mensaje con tu equipo de desarrollo o contactá al equipo de Koin para que te guíen.</div>`,
+    opts:[
+      {l:'Solucionado, volver a probar',n:'paso4_publicar'},
+      {l:'Contactar equipo de Koin',n:'support_contact'},
+    ]
+  },
+  debug_wrong_pages:{
+    text:`Si el script se activa en todas las páginas y no solo en la de confirmación de compra:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt">Abrí el tag en GTM y fijate en la sección <strong>Activación</strong></div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt">Si dice "Todas las páginas", eliminalo y seleccioná la regla <code>pageViewOrderPlaced</code></div></div></div><div class="step-row"><span class="step-num">3</span><div><div class="stxt">Guardá y volvé a publicar</div></div></div></div><div class="warn-box">Un script que carga en todas las páginas puede hacer más lenta la tienda. Es importante corregirlo antes de publicar definitivamente.</div>`,
+    opts:[
+      {l:'Solucionado, publicar',n:'paso4_publicar'},
+      {l:'↩ Volver',n:'debug_menu'},
+    ]
+  },
+  debug_checkout_blocked:{
+    text:`Si la compra se bloquea después de que cargó el componente de Koin:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt">¿El bloqueo ocurre antes o después de que el comprador completa la validación?</div><div class="slabel">Si el comprador no completó el proceso de validación, es normal que espere</div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt">Abrí las herramientas del navegador (F12) → <strong>Consola</strong> y buscá mensajes en rojo</div></div></div><div class="step-row"><span class="step-num">3</span><div><div class="stxt">Desactivá temporalmente el tag de Koin en GTM (sin publicar) y verificá si el checkout funciona sin él</div><div class="slabel">Esto confirma si el problema viene del script de Koin</div></div></div></div>`,
+    opts:[
+      {l:'Contactar equipo de Koin',n:'support_contact'},
+      {l:'↩ Volver',n:'debug_menu'},
+    ]
+  },
+  debug_console:{
+    text:`Cómo ver los errores del navegador:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt">Presioná <strong>F12</strong> (o clic derecho → Inspeccionar)</div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt">Hacé clic en la pestaña <strong>Consola</strong></div></div></div><div class="step-row"><span class="step-num">3</span><div><div class="stxt">Buscá mensajes en rojo — esos son los errores</div></div></div></div><div class="tip">Hacé una captura de pantalla de los errores en rojo y compartila con el equipo de Koin. Con eso pueden darte una solución precisa mucho más rápido.</div>`,
+    opts:[
+      {l:'Veo "Refused to load script"',n:'debug_csp'},
+      {l:'Contactar equipo de Koin con el error',n:'support_contact'},
+      {l:'↩ Volver',n:'debug_menu'},
+    ]
+  },
+  support_contact:{
+    text:`Para que el equipo de Koin pueda ayudarte rápido, prepará esta información:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt">La dirección web (URL) de tu tienda</div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt">Una captura del tag y la regla en GTM</div></div></div><div class="step-row"><span class="step-num">3</span><div><div class="stxt">Una captura de los errores que ves en la Consola del navegador (si hay)</div></div></div><div class="step-row"><span class="step-num">4</span><div><div class="stxt">Describí qué esperabas que pasara y qué pasó en realidad</div></div></div></div><br>Visitá <a href="https://www.koin.com.br" target="_blank" style="color:var(--koin-text)">www.koin.com.br</a> para obtener el contacto del equipo de soporte técnico.`,
+    opts:[
+      {l:'↩ Volver al inicio',n:'welcome'},
+    ]
+  },
+  ctx_admin_vtex:{
+    text:`Para entrar al panel de administración de VTEX:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt">Abrí tu navegador y entrá a <strong>tutienda.myvtex.com/admin</strong></div><div class="slabel">Reemplazá "tutienda" por el nombre de tu cuenta VTEX</div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt">Ingresá tu email y contraseña de VTEX</div></div></div><div class="step-row"><span class="step-num">3</span><div><div class="stxt">Una vez adentro, vas a ver el panel principal con el menú a la izquierda</div></div></div></div><div class="tip">Si no sabés cuál es el nombre de tu cuenta VTEX, preguntale al responsable técnico de tu tienda o buscá en los correos de bienvenida de VTEX.</div>`,
+    opts:[
+      {l:'Ya estoy adentro, ir al paso 1',n:'paso1_vtex'},
+      {l:'No sé el nombre de mi cuenta VTEX',n:'ctx_nombre_cuenta'},
+    ]
+  },
+  ctx_nombre_cuenta:{
+    text:`Si no sabés el nombre de tu cuenta VTEX, hay varias formas de encontrarlo:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt">Revisá los correos de bienvenida que te envió VTEX cuando crearon la cuenta</div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt">Preguntale a quien administra la tienda o a tu agencia de desarrollo</div></div></div><div class="step-row"><span class="step-num">3</span><div><div class="stxt">Si ya tenés acceso a alguna parte del admin, fijate en la URL — el nombre de la cuenta aparece ahí</div></div></div></div>`,
+    opts:[
+      {l:'Ya lo tengo, entrar al admin',n:'ctx_admin_vtex'},
+      {l:'↩ Volver al inicio',n:'welcome'},
+    ]
+  },
+  ctx_que_es_gtm:{
+    text:`Google Tag Manager (GTM) es una herramienta gratuita de Google que te permite agregar scripts y configuraciones a tu tienda sin necesidad de tocar el código directamente.<br><br>En lugar de pedirle a un desarrollador que agregue un script cada vez, vos podés hacerlo desde el panel de GTM, y los cambios se aplican automáticamente en la tienda.<br><br>Para usarlo con Koin necesitás:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt">Una cuenta de Google (la misma que usás para Gmail sirve)</div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt">Crear un "contenedor" GTM para tu tienda — es gratis y tarda 2 minutos</div></div></div></div>`,
+    opts:[
+      {l:'¿Cómo creo una cuenta en GTM?',n:'ctx_crear_gtm'},
+      {l:'Ya tengo GTM, continuar',n:'paso1_vtex'},
+    ]
+  },
+  ctx_crear_gtm:{
+    text:`Crear una cuenta en Google Tag Manager es simple:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt">Entrá a <strong>tagmanager.google.com</strong> con tu cuenta de Google</div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt">Hacé clic en <strong>"Crear cuenta"</strong></div></div></div><div class="step-row"><span class="step-num">3</span><div><div class="stxt">Poné el nombre de tu empresa y seleccioná el país</div></div></div><div class="step-row"><span class="step-num">4</span><div><div class="stxt">En "Nombre del contenedor" poné el nombre o URL de tu tienda, y elegí <strong>Web</strong> como plataforma</div></div></div><div class="step-row"><span class="step-num">5</span><div><div class="stxt">Aceptá los términos y listo — ya tenés tu contenedor GTM</div></div></div></div><div class="tip">Tu Container ID (el código GTM-XXXXXX) aparece en cuanto creás el contenedor. Guardalo porque lo vas a necesitar.</div>`,
+    opts:[
+      {l:'Cuenta creada, continuar',n:'paso1_vtex'},
+    ]
+  },
+  ctx_que_es_tag:{
+    text:`Un "tag" en GTM es básicamente un script que se ejecuta en tu tienda bajo ciertas condiciones.<br><br>En este caso, el tag de Koin es el script que activa la validación de identidad. Le decimos a GTM que lo ejecute solamente cuando alguien termina una compra — no en todas las páginas.<br><br>Para que un tag funcione necesita dos cosas:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt">El <strong>script</strong> — el código que hace el trabajo (lo da Koin)</div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt">Una <strong>regla</strong> (activador) — que le dice cuándo ejecutarse</div></div></div></div>`,
+    opts:[
+      {l:'Entendido, crear el tag',n:'paso3_tag'},
+      {l:'↩ Volver',n:'welcome'},
+    ]
+  },
+  ctx_que_es_activador:{
+    text:`Un activador (o "trigger") es una regla que le dice a GTM <strong>cuándo</strong> debe ejecutar un tag.<br><br>Sin activador, el script se ejecutaría en todas las páginas de tu tienda, lo que no es lo que queremos. Con el activador correcto, el script de Koin se ejecuta únicamente cuando un comprador llega a la página de confirmación de su compra.<br><br>Es como decirle: "ejecutá este script solo cuando la URL de la página contiene /checkout/orderPlaced".`,
+    opts:[
+      {l:'Entendido, crear el activador',n:'paso2_activador'},
+      {l:'↩ Volver',n:'welcome'},
+    ]
+  },
+  ctx_donde_gtm:{
+    text:`Para entrar a Google Tag Manager:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt">Abrí tu navegador y entrá a <strong>tagmanager.google.com</strong></div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt">Iniciá sesión con tu cuenta de Google</div></div></div><div class="step-row"><span class="step-num">3</span><div><div class="stxt">Seleccioná la cuenta y el contenedor de tu tienda</div></div></div></div><div class="tip">Si es la primera vez que entrás, puede que necesites crear una cuenta. Es gratis y tarda un par de minutos.</div>`,
+    opts:[
+      {l:'Ya estoy en GTM, ¿qué hago?',n:'paso2_activador'},
+      {l:'No tengo cuenta en GTM todavía',n:'ctx_crear_gtm'},
+    ]
+  },
+  ctx_orderplaced:{
+    text:`La página <code>/checkout/orderPlaced</code> es la pantalla de confirmación que ve el comprador después de finalizar una compra — algo así como "¡Gracias por tu compra!".<br><br>Es exactamente en ese momento donde Koin activa la validación de identidad, porque la compra ya fue procesada y se tiene toda la información necesaria.<br><br>Por eso configuramos la regla para que el script se ejecute solo cuando la URL contiene ese texto.`,
+    opts:[
+      {l:'Entendido, crear la regla',n:'paso2_activador'},
+      {l:'↩ Volver',n:'welcome'},
+    ]
+  },
+  ctx_que_es_script:{
+    text:`El script es el código que Koin te proporciona para activar la validación de identidad.<br><br>No hace falta entender cómo funciona por dentro — solo hay que pegarlo en el lugar correcto dentro de GTM (en el campo HTML del tag) y el resto lo hace solo.<br><br>Hay dos versiones:<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt"><strong>Sandbox</strong> — para probar que todo funciona</div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt"><strong>Producción</strong> — para la tienda real, con compradores reales</div></div></div></div>`,
+    opts:[
+      {l:'Ver script de Sandbox',n:'script_sandbox'},
+      {l:'Ver script de Producción',n:'script_prod'},
+      {l:'↩ Volver',n:'paso3_tag'},
+    ]
+  },
+  ctx_publicar_gtm:{
+    text:`Publicar en GTM significa que los cambios que hiciste (el tag y la regla) se aplican en tu tienda real.<br><br>Mientras no publicás, los cambios existen en GTM pero <strong>no afectan a tu tienda</strong>. Por eso es importante publicar al final.<br><br><div class="steps-list"><div class="step-row"><span class="step-num">1</span><div><div class="stxt">Primero probá con el modo <strong>Vista previa</strong> para verificar que todo funciona</div></div></div><div class="step-row"><span class="step-num">2</span><div><div class="stxt">Cuando estés seguro, hacé clic en <strong>"Enviar"</strong> arriba a la derecha en GTM</div></div></div><div class="step-row"><span class="step-num">3</span><div><div class="stxt">Ponele un nombre a la versión (ej: "Script Koin v1") y confirmá</div></div></div></div>`,
+    opts:[
+      {l:'Ir a publicar',n:'paso4_publicar'},
+      {l:'↩ Volver',n:'welcome'},
+    ]
+  },
+};
+
+const msgsEl = document.getElementById('msgs');
+const optsEl = document.getElementById('opts');
+const inpEl = document.getElementById('inp');
+const sndEl = document.getElementById('snd');
+const progressFill = document.getElementById('progress-fill');
+let cur = 'welcome';
+
+function setProgress(step) {
+  const p = STEPS_PROGRESS[step] || 5;
+  progressFill.style.width = p + '%';
+}
+
+function addMsg(html, isUser) {
+  const d = document.createElement('div');
+  d.className = 'm ' + (isUser ? 'u' : 'b');
+  const av = document.createElement('div');
+  av.className = 'av';
+  av.textContent = isUser ? 'Vos' : 'K';
+  const b = document.createElement('div');
+  b.className = 'bbl';
+  b.innerHTML = html;
+  d.appendChild(av);
+  d.appendChild(b);
+  msgsEl.appendChild(d);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+}
+
+function showTyping() {
+  const d = document.createElement('div');
+  d.className = 'm b'; d.id = 'typ';
+  d.innerHTML = '<div class="av">K</div><div class="bbl"><div class="typing"><span></span><span></span><span></span></div></div>';
+  msgsEl.appendChild(d);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+}
+function rmTyping() { const t = document.getElementById('typ'); if(t) t.remove(); }
+
+function renderOpts(step) {
+  optsEl.innerHTML = '';
+  const node = KB[step];
+  if (!node || !node.opts) return;
+  node.opts.forEach((o, i) => {
+    const b = document.createElement('button');
+    b.className = 'ob' + (i === 0 ? ' p' : '');
+    b.textContent = o.l;
+    b.onclick = () => go(o.l, o.n);
+    optsEl.appendChild(b);
+  });
+}
+
+function go(label, next) {
+  addMsg(label, true);
+  optsEl.innerHTML = '';
+  cur = next;
+  showTyping();
+  const delay = next === 'fin' ? 800 : 500;
+  setTimeout(() => {
+    rmTyping();
+    const node = KB[next] || KB.welcome;
+    addMsg(node.text);
+    renderOpts(next);
+    setProgress(next);
+    if (next === 'fin') {
+      setTimeout(() => {
+        document.getElementById('success-overlay').classList.add('show');
+      }, 900);
+    }
+  }, delay);
+}
+
+function handleText(text) {
+  const t = text.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  let next = null;
+
+  if (/c.mo (entro|accedo|ingreso|me logueo|inicio sesion|abro).*(vtex|admin|panel)/.test(t) ||
+      /d.nde (entro|accedo|est.).*(vtex|admin)/.test(t) ||
+      /entrar.*(admin|vtex)/.test(t) ||
+      /admin.*(vtex|tienda).*c.mo/.test(t) ||
+      /login.*vtex|vtex.*login/.test(t) ||
+      /(acceso|acceder).*(vtex|admin)/.test(t)) {
+    next = 'ctx_admin_vtex';
+  }
+  else if (/c.mo (entro|accedo|ingreso|abro|uso).*(gtm|google tag|tag manager)/.test(t) ||
+           /d.nde (est.|queda|encuentro|abro).*(gtm|tag manager)/.test(t) ||
+           /entrar.*(gtm|tag manager)/.test(t) ||
+           /abrir.*(gtm|tag manager)/.test(t)) {
+    next = 'ctx_donde_gtm';
+  }
+  else if (/(que es|para que sirve|que hace|como funciona).*(gtm|google tag|tag manager)/.test(t) ||
+           /no s. que es.*(gtm|tag manager)/.test(t) ||
+           /nunca us. gtm/.test(t)) {
+    next = 'ctx_que_es_gtm';
+  }
+  else if (/(crear|abrir|tener).*(cuenta|contenedor).*(gtm|tag manager)/.test(t) ||
+           /(gtm|tag manager).*(crear|no tengo|necesito crear)/.test(t)) {
+    next = 'ctx_crear_gtm';
+  }
+  else if (/(que es|para que sirve|que hace).*(tag|etiqueta)/.test(t) ||
+           /no entiendo.*(tag|etiqueta)/.test(t)) {
+    next = 'ctx_que_es_tag';
+  }
+  else if (/(que es|para que sirve|que hace).*(activador|trigger|regla)/.test(t) ||
+           /no entiendo.*(activador|trigger)/.test(t)) {
+    next = 'ctx_que_es_activador';
+  }
+  else if (/(que es|que significa|para que).*(orderplaced|order.placed|confirmacion|confirmar compra)/.test(t) ||
+           /pagina de confirmacion/.test(t)) {
+    next = 'ctx_orderplaced';
+  }
+  else if (/(que es|para que sirve|que hace).*(script|codigo)/.test(t) ||
+           /no entiendo.*(script|codigo)/.test(t)) {
+    next = 'ctx_que_es_script';
+  }
+  else if (/(como|cuando|para que).*(publicar|publish)/.test(t) ||
+           /que significa publicar/.test(t)) {
+    next = 'ctx_publicar_gtm';
+  }
+  else if (/nombre.*(cuenta|tienda).*vtex|no s. (cual|el nombre).*vtex/.test(t)) {
+    next = 'ctx_nombre_cuenta';
+  }
+  else if (/paso 1|instalar gtm|instalar google|app store/.test(t)) next = 'paso1_vtex';
+  else if (/paso 2|activador|regla|trigger/.test(t)) next = 'paso2_activador';
+  else if (/paso 3|crear.*tag|crear.*etiqueta/.test(t)) next = 'paso3_tag';
+  else if (/paso 4|publicar|vista previa|preview/.test(t)) next = 'paso4_publicar';
+  else if (/sandbox|script.*prueba/.test(t)) next = 'script_sandbox';
+  else if (/produccion|script.*real/.test(t)) next = 'script_prod';
+  else if (/checklist|lista|verificacion final/.test(t)) next = 'checklist';
+  else if (/requisito|antes de empezar|necesito saber/.test(t)) next = 'prereqs';
+  else if (/no funciona|error|falla|algo mal|no anda/.test(t)) next = 'debug_menu';
+  else if (/no.*(activa|dispara|fired|aparece el tag)/.test(t)) next = 'debug_not_fired';
+  else if (/(modal|componente|ventana).*(no aparece|no carga|no se ve)/.test(t) ||
+           /no aparece.*(koin|modal|componente)/.test(t)) next = 'debug_no_modal';
+  else if (/bloquea|compra.*bloquea|no avanza/.test(t)) next = 'debug_checkout_blocked';
+  else if (/consola|console|f12|herramientas del navegador/.test(t)) next = 'debug_console';
+  else if (/bloqueado|csp|refused to load|seguridad/.test(t)) next = 'debug_csp';
+  else if (/todas las paginas|paginas incorrectas/.test(t)) next = 'debug_wrong_pages';
+  else if (/soporte|contactar|contact|ayuda.*koin/.test(t)) next = 'support_contact';
+
+  if (!next) {
+    addMsg(text, true);
+    optsEl.innerHTML = '';
+    showTyping();
+    setTimeout(() => {
+      rmTyping();
+      addMsg('No estoy seguro de entender esa pregunta. Si tiene que ver con alguno de los pasos de la instalación, podés consultarme con más detalle. Si preferís, usá los botones para avanzar.');
+      renderOpts(cur);
+      setProgress(cur);
+    }, 500);
+    return;
+  }
+
+  addMsg(text, true);
+  optsEl.innerHTML = '';
+  cur = next;
+  showTyping();
+  setTimeout(() => {
+    rmTyping();
+    addMsg(KB[next].text);
+    renderOpts(next);
+    setProgress(next);
+  }, 500);
+}
+
+sndEl.onclick = () => { const v = inpEl.value.trim(); if(!v) return; inpEl.value = ''; handleText(v); };
+inpEl.addEventListener('keydown', e => { if(e.key === 'Enter') sndEl.click(); });
+
+setTimeout(() => {
+  addMsg(KB.welcome.text);
+  renderOpts('welcome');
+  setProgress('welcome');
+}, 300);
+</script>
+</body>
+</html>
