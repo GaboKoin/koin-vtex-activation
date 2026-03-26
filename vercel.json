@@ -1,8 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "cd portal && npm install",
-  "buildCommand": "cd portal && npm run build",
-  "outputDirectory": "portal/dist",
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "rewrites": [
     {
       "source": "/((?!manuals/|docs/|chatbot/|assets/|favicon\\.svg).*)",
